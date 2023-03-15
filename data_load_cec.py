@@ -5,7 +5,7 @@ import numpy as np
 
 
 # The directory containing the preprocessed data
-direct = "/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc"
+direct = "EEGproj-main/EEGproj-main/data_preproc"
 
 #A = audi
 #V = vis
@@ -65,7 +65,7 @@ event_dict = { 'visual/b/high' : 1,
                'NA2'                  : 23,   # Remove !!
                'NA3'                  : 24  } # Remove !!
 
-raw = mne.io.read_epochs_eeglab("/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc/PP02_4adj.set", montage_units='dm')
+raw = mne.io.read_epochs_eeglab(direct+"/PP02_4adj.set", montage_units='dm')
 gennemsnit = raw.average(method='mean',by_event_type=True)
 chan = 'Cz'
 
@@ -89,7 +89,7 @@ baseline = interval
 #getting data from speechfiles
 # raw = epochs
 for file in Speech_files:
-    path = "/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc/ " + str(file)
+    path = direct + str(file)
     path = path.replace(" ","")
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1) 
@@ -124,7 +124,7 @@ all_datas = np.concatenate((data_As,data_Vs,data_AVics,data_AVcs))
 
 #data from non-speech
 for file in Non_speech_files:
-    path = "/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc/ " + str(file)
+    path = direct + str(file)
     path = path.replace(" ","")
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1)
