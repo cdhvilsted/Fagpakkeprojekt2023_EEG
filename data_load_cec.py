@@ -80,7 +80,7 @@ data_Vns=np.zeros(141,)
 data_AVicns=np.zeros(141,)
 data_AVcns=np.zeros(141,)
 
-interval = (-0.1,0)
+interval = (-0.1, 0)
 
 times = np.arange(-0.1,1,step=1/128)
 baseline = interval
@@ -145,7 +145,7 @@ data_AVicns=data_AVicns/len(Non_speech_files)-data_Vns
 all_datans = np.concatenate((data_Ans,data_Vns,data_AVicns,data_AVcns))
 #mne.baseline.rescale(all_datans.get_data(),times=times,baseline=(-0.1,0), mode='mean', copy=False)
 
-'''
+
 x = np.arange(-0.1,1,step=1/128)
 fig, (ax1,ax2) = plt.subplots(1,2)
 ax1.axvline(x=0.1,color='r')
@@ -165,4 +165,3 @@ ax2.set_title('Non-speech')
 ax1.legend(loc='upper right', fontsize = 8)
 ax2.legend(loc='upper right', fontsize = 8)
 plt.show()
-'''
