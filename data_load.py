@@ -10,7 +10,7 @@ import numpy as np
 
 
 # The directory containing the preprocessed data
-direct = "EEGproj-main\EEGproj-main\pipeline_data\data_preproc"
+directory = os.path.dirname(os.path.abspath(__file__))+"/EEGproj-main/EEGproj-main/data_preproc"
 
 #Default stuff
 
@@ -30,7 +30,7 @@ AV_c = ["Tagi_A_Tagi_V","Tabi_A_Tabi_V"] #congruent audivisual
 
 AV_ic = ["Tagi_A_Tabi_V","Tabi_A_Tagi_V"] # incongruent audivisual
 
-list_files = [i for i in os.listdir(direct) if i[-4:] == ".set"]
+list_files = [i for i in os.listdir(directory) if i[-4:] == ".set"]
 
 
 Speech = ["PP03","PP09", "PP10", "PP11", "PP12", "PP13", "PP14", "PP15", 
@@ -73,7 +73,7 @@ event_dict = { 'visual/b/high' : 1,
                'NA2'                  : 23,   # Remove !!
                'NA3'                  : 24  } # Remove !!
 
-raw = mne.io.read_epochs_eeglab("EEGproj-main\EEGproj-main\pipeline_data\data_preproc\PP02_4adj.set", montage_units='dm')
+raw = mne.io.read_epochs_eeglab(directory+"/PP02_4adj.set", montage_units='dm')
 #raw = mne.io.Raw("EEGproj-main\EEGproj-main\pipeline_data\data_preproc\PP02_4adj.set")
 #fig = plt.figure(raw.plot())
 #plt.show()
@@ -130,7 +130,7 @@ times = np.arange(-0.1,1,step=1/128)
 
 #getting data from speechfiles
 for file in Speech_files:
-    path = "EEGproj-main\EEGproj-main\pipeline_data\data_preproc\ " + str(file)
+    path = directory+"/ " + str(file)
     path = path.replace(" ","")
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1)
@@ -152,7 +152,7 @@ all_datas = np.concatenate((data_As,data_Vs,data_AVics,data_AVcs))
 
 #data from non-speech
 for file in Non_speech_files:
-    path = "EEGproj-main\EEGproj-main\pipeline_data\data_preproc\ " + str(file)
+    path = directory +"/" +str(file)
     path = path.replace(" ","")
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1)
