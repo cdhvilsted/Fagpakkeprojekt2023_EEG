@@ -144,10 +144,10 @@ for file in Speech_files:
     #data_V.append(raw[Vis_event[0]].average().get_data(picks=chan)[0]+raw[Vis_event[1]].average().get_data(picks=chan)[0])
     #data_AVc.append(raw[AV_c[0]].average().get_data(picks=chan)[0]+raw[AV_c[1]].average().get_data(picks=chan)[0])
     #data_AVic.append(raw[AV_ic[0]].average().get_data(picks=chan)[0]+raw[AV_ic[1]].average().get_data(picks=chan)[0])
-data_As =data_As/len(Speech_files)
-data_Vs=data_Vs/len(Speech_files)
-data_AVcs =data_AVcs/len(Speech_files)-data_Vs
-data_AVics=data_AVics/len(Speech_files)-data_Vs
+data_As =data_As/(len(Speech_files)*2)
+data_Vs=data_Vs/(len(Speech_files)*2)
+data_AVcs =data_AVcs/(len(Speech_files)*2)-data_Vs
+data_AVics=data_AVics/(len(Speech_files)*2)-data_Vs
 all_datas = np.concatenate((data_As,data_Vs,data_AVics,data_AVcs))
 
 #data from non-speech
@@ -166,10 +166,10 @@ for file in Non_speech_files:
     #data_V.append(raw[Vis_event[0]].average().get_data(picks=chan)[0]+raw[Vis_event[1]].average().get_data(picks=chan)[0])
     #data_AVc.append(raw[AV_c[0]].average().get_data(picks=chan)[0]+raw[AV_c[1]].average().get_data(picks=chan)[0])
     #data_AVic.append(raw[AV_ic[0]].average().get_data(picks=chan)[0]+raw[AV_ic[1]].average().get_data(picks=chan)[0])
-data_Ans =data_Ans/len(Non_speech_files)
-data_Vns=data_Vns/len(Non_speech_files)
-data_AVcns =data_AVcns/len(Non_speech_files)-data_Vns
-data_AVicns=data_AVicns/len(Non_speech_files)-data_Vns
+data_Ans =data_Ans/(len(Non_speech_files)*2)
+data_Vns=data_Vns/(len(Non_speech_files)*2)
+data_AVcns =data_AVcns/(len(Non_speech_files)*2)-data_Vns
+data_AVicns=data_AVicns/(len(Non_speech_files)*2)-data_Vns
 all_datans = np.concatenate((data_Ans,data_Vns,data_AVicns,data_AVcns))
 
 
