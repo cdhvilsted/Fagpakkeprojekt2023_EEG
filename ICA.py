@@ -14,3 +14,4 @@ ica.fit(epochs)
 
 # Plot the topographic maps of the independent components
 ica.plot_components()
+
