@@ -5,7 +5,10 @@ import numpy as np
 
 
 # The directory containing the preprocessed data
-direct = "/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc"
+#direct = "/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc"
+directory = os.path.dirname(os.path.abspath(__file__))+"/EEGproj-main/EEGproj-main/data_preproc"
+
+print("Working directory:  ", directory[:30],"/.../",directory[-57:], " ") # just printing the path to the data
 
 #A = audi
 #V = vis
@@ -22,19 +25,22 @@ AV_c = ["Tagi_A_Tagi_V","Tabi_A_Tabi_V"] #congruent audivisual
 
 AV_ic = ["Tagi_A_Tabi_V","Tabi_A_Tagi_V"] # incongruent audivisual
 
-list_files = [i for i in os.listdir(direct) if i[-4:] == ".set"]
+list_files = [i for i in os.listdir(directory) if i[-4:] == ".set"]
+print("list_files contains a list of all the data files: ",list_files[:2], " ... ", list_files[-2:])
 
-
+# The list of participants
 Speech = ["PP03","PP09", "PP10", "PP11", "PP12", "PP13", "PP14", "PP15", 
           "PP16", "PP17", "PP20", "PP25", "PP26", "PP28"]
 Non_speech = ["PP02", "PP04", "PP05", "PP06", "PP07", "PP08", "PP18", "PP19", 
               "PP21", "PP22", "PP23", "PP24", "PP27", "PP29"]
 
+# The list of channels
 common = ['AF4', 'AFz', 'C1', 'C2', 'C3', 'C4', 'CP1', 'CP2', 'CP3', 'CP4',
        'CP5', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'FC1', 'FC2', 'FCz',
        'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P7', 'PO3',
        'PO4', 'PO7', 'PO8', 'POz', 'Pz']
 
+# The list of files in
 Speech_files = [ i + "_4adj.set" for i in Speech]
 Non_speech_files = [i + "_4adj.set" for i in Non_speech]
 
@@ -65,7 +71,9 @@ event_dict = { 'visual/b/high' : 1,
                'NA2'                  : 23,   # Remove !!
                'NA3'                  : 24  } # Remove !!
 
-raw = mne.io.read_epochs_eeglab("/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc/PP02_4adj.set", montage_units='dm')
+raw = mne.io.read_epochs_eeglab(directory+"/PP02_4adj.set", montage_units='dm')
+#raw = mne.io.read_epochs_eeglab("/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc/PP02_4adj.set", montage_units='dm')
+
 gennemsnit = raw.average(method='mean',by_event_type=True)
 chan = 'Cz'
 
@@ -89,7 +97,7 @@ baseline = interval
 #getting data from speechfiles
 # raw = epochs
 for file in Speech_files:
-    path = "/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc/ " + str(file)
+    path = directory +"/"+ str(file)
     path = path.replace(" ","")
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1) 
@@ -131,7 +139,7 @@ all_datas = np.concatenate((data_As,data_Vs,data_AVics,data_AVcs))
 
 #data from non-speech
 for file in Non_speech_files:
-    path = "/Users/ceciliehvilsted/Documents/GitHub/Fagpakkeprojekt2023_EEG/EEGproj-main/EEGproj-main/data_preproc/ " + str(file)
+    path = directory +"/" + str(file)
     path = path.replace(" ","")
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1)
