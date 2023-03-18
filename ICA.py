@@ -4,7 +4,7 @@ import mne
 import numpy as np
 import random
 
-randomSeed = random.seed(10)
+randomSeed = random.seed(43)
 
 epochs = mne.read_epochs_eeglab(path, montage_units='dm')
 
