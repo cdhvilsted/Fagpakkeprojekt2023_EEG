@@ -82,11 +82,22 @@ data_As=np.zeros(141,)
 data_Vs=np.zeros(141,)
 data_AVics=np.zeros(141,)
 data_AVcs=np.zeros(141,)
+
+data_As_ind = []
+data_Vs_ind =[]
+data_AVics_ind =[]
+data_AVcs_ind=[]
+
 #for non-speech group
 data_Ans=np.zeros(141,)
 data_Vns=np.zeros(141,)
 data_AVicns=np.zeros(141,)
 data_AVcns=np.zeros(141,)
+
+data_Ans_ind=[]
+data_Vns_ind=[]
+data_AVicns_ind=[]
+data_AVcns_ind=[]
 
 interval = (-0.1, 0)
 
@@ -123,12 +134,19 @@ for file in Speech_files:
     #data_V.append(raw[Vis_event[0]].average().get_data(picks=chan)[0]+raw[Vis_event[1]].average().get_data(picks=chan)[0])
     #data_AVc.append(raw[AV_c[0]].average().get_data(picks=chan)[0]+raw[AV_c[1]].average().get_data(picks=chan)[0])
     #data_AVic.append(raw[AV_ic[0]].average().get_data(picks=chan)[0]+raw[AV_ic[1]].average().get_data(picks=chan)[0])
+    
+    data_As_ind.append(raw[Aud_event[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[Aud_event[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_Vs_ind.append(raw[Vis_event[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[Vis_event[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_AVcs_ind.append(raw[AV_c[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[AV_c[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_AVics_ind.append(raw[AV_ic[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[AV_ic[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    
 '''
 data_As =data_As/len(Speech_files)
 data_Vs=data_Vs/len(Speech_files)
 data_AVcs =data_AVcs/len(Speech_files)-data_Vs
 data_AVics=data_AVics/len(Speech_files)-data_Vs
 '''
+
 data_As =data_As/(len(Speech_files)*2)
 data_Vs=data_Vs/(len(Speech_files)*2)
 data_AVcs =data_AVcs/(len(Speech_files)*2)-data_Vs
@@ -152,6 +170,12 @@ for file in Non_speech_files:
     #data_V.append(raw[Vis_event[0]].average().get_data(picks=chan)[0]+raw[Vis_event[1]].average().get_data(picks=chan)[0])
     #data_AVc.append(raw[AV_c[0]].average().get_data(picks=chan)[0]+raw[AV_c[1]].average().get_data(picks=chan)[0])
     #data_AVic.append(raw[AV_ic[0]].average().get_data(picks=chan)[0]+raw[AV_ic[1]].average().get_data(picks=chan)[0])
+    
+    data_Ans_ind.append(raw[Aud_event[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[Aud_event[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_Vns_ind.append(raw[Vis_event[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[Vis_event[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_AVcns_ind.append(raw[AV_c[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[AV_c[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_AVicns_ind.append(raw[AV_ic[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[AV_ic[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    
 
 data_Ans =data_Ans/(len(Non_speech_files)*2)
 data_Vns=data_Vns/(len(Non_speech_files)*2)
@@ -160,7 +184,7 @@ data_AVicns=data_AVicns/(len(Non_speech_files)*2)-data_Vns
 all_datans = np.concatenate((data_Ans,data_Vns,data_AVicns,data_AVcns))
 #mne.baseline.rescale(all_datans.get_data(),times=times,baseline=(-0.1,0), mode='mean', copy=False)
 
-
+'''
 x = np.arange(-0.1,1,step=1/128)
 fig, (ax1,ax2) = plt.subplots(1,2)
 ax1.axvline(x=0.1,color='r')
@@ -180,3 +204,4 @@ ax2.set_title('Non-speech')
 ax1.legend(loc='upper right', fontsize = 8)
 ax2.legend(loc='upper right', fontsize = 8)
 plt.show()
+'''

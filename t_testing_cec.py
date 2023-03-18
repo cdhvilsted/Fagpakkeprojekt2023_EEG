@@ -1,44 +1,85 @@
 
 import scipy
-from data_load_cec import data_As, data_Ans, data_AVcns, data_AVcs, data_AVicns, data_AVics, data_Vns, data_Vs, all_datans, all_datas
+from data_load_cec import *
 import mne
 import numpy as np
 
 # using scipy: t-test used compares the means of two related samples of scores
 # N component
 times = np.arange(-0.1,1,step=1/128)
-N_comp_min = (np.where(times <= 0.05))[-1][-1]
-N_comp_max = (np.where(times >= 0.15))[0][0]
-#print(times)
-print(N_comp_min, N_comp_max)
-print(len(data_As))
+N_comp_min = (np.where(times <= 0.09))[-1][-1] # 90 ms
+N_comp_max = (np.where(times >= 0.11))[0][0] # 110 ms
+print('N indexes: ' + str(N_comp_min) + ',' + str(N_comp_max))
 
+# P2 component
+P_comp_min = (np.where(times <= 0.19))[-1][-1] # 190 ms
+P_comp_max = (np.where(times >= 0.21))[0][0] # 210 ms
+print('P indexes: ' + str(P_comp_min) + ',' + str(P_comp_max))
+
+# amplitude samples for same stimuli
+N1_As = []
+N1_ics = []
+N1_cs = []
+
+P2_As = []
+P2_ics = []
+P2_cs = []
+
+for i in range(len(data_As_ind)):
+    N1_As.append(np.mean(data_As_ind[i][0][N_comp_min:N_comp_max]))
+    N1_ics.append(np.mean(data_AVics_ind[i][0][N_comp_min:N_comp_max]))
+    N1_cs.append(np.mean(data_AVcs_ind[i][0][N_comp_min:N_comp_max]))
+    
+    P2_As.append(np.mean(data_As_ind[i][0][P_comp_min:P_comp_max]))
+    P2_ics.append(np.mean(data_AVics_ind[i][0][P_comp_min:P_comp_max]))
+    P2_cs.append(np.mean(data_AVcs_ind[i][0][P_comp_min:P_comp_max]))
+
+N1_Ans = []
+N1_icns = []
+N1_cns = []
+
+P2_Ans = []
+P2_icns = []
+P2_cns = []
+
+for i in range(len(data_Ans_ind)):
+    N1_Ans.append(np.mean(data_Ans_ind[i][0][N_comp_min:N_comp_max]))
+    N1_icns.append(np.mean(data_AVicns_ind[i][0][N_comp_min:N_comp_max]))
+    N1_cns.append(np.mean(data_AVcns_ind[i][0][N_comp_min:N_comp_max]))
+    
+    P2_Ans.append(np.mean(data_Ans_ind[i][0][P_comp_min:P_comp_max]))
+    P2_icns.append(np.mean(data_AVicns_ind[i][0][P_comp_min:P_comp_max]))
+    P2_cns.append(np.mean(data_AVcns_ind[i][0][P_comp_min:P_comp_max]))
+
+#print(len(data_As_ind))
+#print(data_As_ind[1][0][N_comp_min:N_comp_max])
+print(len((data_As_ind[0][0])))
+
+# N1
 # speech
-test_As_in = scipy.stats.ttest_rel(data_As[N_comp_min:N_comp_max], data_AVics[N_comp_min:N_comp_max]) # auditiv + incongruent
-test_As_con = scipy.stats.ttest_rel(data_As[N_comp_min:N_comp_max], data_AVcs[N_comp_min:N_comp_max]) # auditiv + congruent
+test_As_in = scipy.stats.ttest_rel(N1_As, N1_ics) # auditiv + incongruent
+test_As_con = scipy.stats.ttest_rel(N1_As, N1_cs) # auditiv + congruent
 print('T-test for A and incongruent AV in speech mode gives (N): ' + str(test_As_in))
 print('T-test for A and congruent AV in speech mode gives (N): ' + str(test_As_con))
 
 # non-speech
-test_Ans_in = scipy.stats.ttest_rel(data_Ans[N_comp_min:N_comp_max], data_AVicns[N_comp_min:N_comp_max]) # auditiv + incongruent
-test_Ans_con = scipy.stats.ttest_rel(data_Ans[N_comp_min:N_comp_max], data_AVcns[N_comp_min:N_comp_max]) # auditiv + congruent
+test_Ans_in = scipy.stats.ttest_rel(N1_Ans, N1_icns) # auditiv + incongruent
+test_Ans_con = scipy.stats.ttest_rel(N1_Ans, N1_cns) # auditiv + congruent
 print('T-test for A and incongruent AV in non-speech mode gives (N): ' + str(test_Ans_in))
 print('T-test for A and congruent AV in non-speech mode gives (N): ' + str(test_Ans_con))
 
 
-# P2 component
-P_comp_min = (np.where(times <= 0.15))[-1][-1]
-P_comp_max = (np.where(times >= 0.25))[0][0]
 
+# P2
 # speech
-As_in = scipy.stats.ttest_rel(data_As[P_comp_min:P_comp_max], data_AVics[P_comp_min:P_comp_max]) # auditiv + incongruent
-As_con = scipy.stats.ttest_rel(data_As[P_comp_min:P_comp_max], data_AVcs[P_comp_min:P_comp_max]) # auditiv + congruent
+As_in = scipy.stats.ttest_rel(P2_As, P2_ics) # auditiv + incongruent
+As_con = scipy.stats.ttest_rel(P2_As, P2_cs) # auditiv + congruent
 print('T-test for A and incongruent AV in speech mode gives (P): ' + str(As_in))
 print('T-test for A and congruent AV in speech mode gives (P): ' + str(As_con))
 
 # non-speech
-Ans_in = scipy.stats.ttest_rel(data_Ans[P_comp_min:P_comp_max], data_AVicns[P_comp_min:P_comp_max]) # auditiv + incongruent
-Ans_con = scipy.stats.ttest_rel(data_Ans[P_comp_min:P_comp_max], data_AVcns[P_comp_min:P_comp_max]) # auditiv + congruent
+Ans_in = scipy.stats.ttest_rel(P2_Ans, P2_icns) # auditiv + incongruent
+Ans_con = scipy.stats.ttest_rel(P2_Ans, P2_cns) # auditiv + congruent
 print('T-test for A and incongruent AV in non-speech mode gives (P): ' + str(Ans_in))
 print('T-test for A and congruent AV in non-speech mode gives (P): ' + str(Ans_con))
 
