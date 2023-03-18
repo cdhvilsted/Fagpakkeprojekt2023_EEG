@@ -7,13 +7,13 @@ import numpy as np
 # using scipy: t-test used compares the means of two related samples of scores
 # N component
 times = np.arange(-0.1,1,step=1/128)
-N_comp_min = (np.where(times <= 0.09))[-1][-1] # 90 ms
-N_comp_max = (np.where(times >= 0.11))[0][0] # 110 ms
+N_comp_min = (np.where(times <= 0.05))[-1][-1] # 50 ms
+N_comp_max = (np.where(times >= 0.15))[0][0] # 150 ms
 print('N indexes: ' + str(N_comp_min) + ',' + str(N_comp_max))
 
 # P2 component
-P_comp_min = (np.where(times <= 0.19))[-1][-1] # 190 ms
-P_comp_max = (np.where(times >= 0.21))[0][0] # 210 ms
+P_comp_min = (np.where(times <= 0.15))[-1][-1] # 150 ms
+P_comp_max = (np.where(times >= 0.25))[0][0] # 250 ms
 print('P indexes: ' + str(P_comp_min) + ',' + str(P_comp_max))
 
 # amplitude samples for same stimuli
