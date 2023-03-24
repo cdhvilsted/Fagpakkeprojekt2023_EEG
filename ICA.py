@@ -36,6 +36,7 @@ event2 = raw[Aud_event[1]] # tagi (maybe)
 aud1person = mne.concatenate_epochs([event1, event2])
 print("shape:",len(aud1person[0]))
 
+
 # Create MNE Epochs object
 
 # Apply ICA to the Epochs object
