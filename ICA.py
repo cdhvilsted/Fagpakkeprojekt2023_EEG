@@ -3,21 +3,35 @@ import sklearn as sk
 import mne
 import numpy as np
 import random
-from t_testing_cec import *
+
 
 randomSeed = random.seed(1)
 
-from sklearn.decomposition import FastICA
-print(all_datans)
+directory = os.path.dirname(os.path.abspath(__file__))+"/EEGproj-main/EEGproj-main/data_preproc"
+
+print("Working directory:  ", directory[:30],"/.../",directory[-57:], " ") # just printing the path to the data
+
+Speech = ["PP03","PP09", "PP10", "PP11", "PP12", "PP13", "PP14", "PP15",
+          "PP16", "PP17", "PP20", "PP25", "PP26", "PP28"]
+Non_speech = ["PP02", "PP04", "PP05", "PP06", "PP07", "PP08", "PP18", "PP19",
+              "PP21", "PP22", "PP23", "PP24", "PP27", "PP29"]
+Speech_files = [ i + "_4adj.set" for i in Speech]
+Non_speech_files = [i + "_4adj.set" for i in Non_speech]
 
 
-# concatenate the epochs
-data_matrix_s = np.concatenate((N1_As, N1_ics, N1_cs, P2_As, P2_ics, P2_cs))
-data_matrix_ns = np.concatenate((N1_Ans, N1_icns, N1_cns, P2_Ans, P2_icns, P2_cns))
+aud1person = None
+file = Speech_files[0]
+path = directory +"/"+ str(file)
+path = path.replace(" ","")
+raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
+raw = raw.crop(tmin=-0.1)
 
-# change to epochs
-epochs = mne.io.RawArray(data_matrix_ns, mne.create_info(common, 512))
+# apply baseline
+event1 = raw[Aud_event[0]].apply_baseline(baseline) # tabi
+event2 = raw[Aud_event[1]].apply_baseline(baseline) # tagi (maybe)
 
+aud1person = mne.concatenate_epochs([event1, event2])
+print("shape:",len(aud1person[0]))
 
 # Create MNE Epochs object
 
@@ -34,7 +48,7 @@ and that n_channels and n_samples are consistent with the in
 -ate the info argument in mne.create_info(common, 512).
 """
 
-ica.fit(epochs)
+ica.fit(aud1person)
 
 # Plot the topographic maps of the independent components
 ica.plot_components()
