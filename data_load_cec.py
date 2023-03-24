@@ -184,17 +184,17 @@ data_AVicns=data_AVicns/(len(Non_speech_files)*2)-data_Vns
 all_datans = np.concatenate((data_Ans,data_Vns,data_AVicns,data_AVcns))
 #mne.baseline.rescale(all_datans.get_data(),times=times,baseline=(-0.1,0), mode='mean', copy=False)
 
-'''
+
 x = np.arange(-0.1,1,step=1/128)
 fig, (ax1,ax2) = plt.subplots(1,2)
-ax1.axvline(x=0.1,color='r')
+#ax1.axvline(x=0.1,color='r')
 ax1.plot(x,data_As,color='k', label='A')
 ax1.plot(x,data_AVics,color='k',linestyle='dashed', label='Incongruent AV')
 ax1.plot(x,data_AVcs,color='0.8', label = 'Congruent AV')
 ax1.set_yticks(np.arange(-6e-6,8e-6,2e-6))
 ax1.invert_yaxis()
 ax1.set_title('Speech')
-ax2.axvline(x=0.1,color='r')
+#ax2.axvline(x=0.1,color='r')
 ax2.plot(x,data_Ans,color='k', label='A')
 ax2.plot(x,data_AVicns,color='k',linestyle='dashed', label='Incongruent AV')
 ax2.plot(x,data_AVcns,color='0.8', label = 'Congruent AV')
@@ -204,4 +204,3 @@ ax2.set_title('Non-speech')
 ax1.legend(loc='upper right', fontsize = 8)
 ax2.legend(loc='upper right', fontsize = 8)
 plt.show()
-'''
