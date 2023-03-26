@@ -147,11 +147,11 @@ data_AVcs =data_AVcs/len(Speech_files)-data_Vs
 data_AVics=data_AVics/len(Speech_files)-data_Vs
 '''
 
-data_As =data_As/(len(Speech_files)*2)
-data_Vs=data_Vs/(len(Speech_files)*2)
-data_AVcs =data_AVcs/(len(Speech_files)*2)-data_Vs
-data_AVics=data_AVics/(len(Speech_files)*2)-data_Vs
 
+data_Vs=data_Vs/(len(Speech_files)*2)
+data_As =data_As/(len(Speech_files)*2)
+data_AVcs =(data_AVcs)/(len(Speech_files)*2)-data_Vs
+data_AVics=(data_AVics)/(len(Speech_files)*2)-data_Vs
 all_datas = np.concatenate((data_As,data_Vs,data_AVics,data_AVcs))
 #mne.baseline.rescale(all_datas.get_data(),times=times,baseline=(-0.1,0), mode='mean', copy=False)
 
@@ -184,6 +184,7 @@ data_AVicns=data_AVicns/(len(Non_speech_files)*2)-data_Vns
 all_datans = np.concatenate((data_Ans,data_Vns,data_AVicns,data_AVcns))
 #mne.baseline.rescale(all_datans.get_data(),times=times,baseline=(-0.1,0), mode='mean', copy=False)
 
+print('max P value is: ' + str(max(data_As)) + ', ' + str(max(data_AVcs)) + ',' + str(max(data_AVics)))
 
 x = np.arange(-0.1,1,step=1/128)
 fig, (ax1,ax2) = plt.subplots(1,2)
