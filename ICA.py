@@ -1,8 +1,8 @@
-from data_load_cec import *
 import sklearn as sk
 import mne
 import numpy as np
 import random
+import os
 
 
 randomSeed = random.seed(1)
@@ -21,7 +21,9 @@ common = ['AF4', 'AFz', 'C1', 'C2', 'C3', 'C4', 'CP1', 'CP2', 'CP3', 'CP4',
        'CP5', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'FC1', 'FC2', 'FCz',
        'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P7', 'PO3',
        'PO4', 'PO7', 'PO8', 'POz', 'Pz']
+Aud_event = ["Tagi_A", "Tabi_A"] #only auditive
 
+Vis_event = ["Tagi_V","Tabi_V"] #only visual
 
 aud1person = None
 file = Speech_files[2]
@@ -38,24 +40,27 @@ print("shape:",len(aud1person[0]))
 
 
 # Create MNE Epochs object
+reject = dict(mag=5e-12, grad=4000e-13)
+
 
 # Apply ICA to the Epochs object
-ica = mne.preprocessing.ICA(n_components=28, method='fastica',random_state=randomSeed ) # 14 components for each group
+ica = mne.preprocessing.ICA(n_components=28, method='fastica',random_state=1) # 14 components for each group
 #ica.fit(mne.EpochsArray(data_matrix_s, mne.create_info(Speech, 128)))
 
 
 #change data_matrix_ns to epochs
 """
-Make sure that the shape is (n_epochs, n_channels, n_samples) 
+Make sure that the shape is (n_epochs, n_channels, n_samples(time)) 
 and that n_channels and n_samples are consistent with the in
 -formation contained in the common variable that you use to cre
 -ate the info argument in mne.create_info(common, 512).
 """
 
-ica.fit(aud1person)
+ica.fit(aud1person, reject = reject)
 # make a for loop for i in range
 print([ica.get_explained_variance_ratio(aud1person, components=i, ch_type='eeg') for i in range(0,28)])
 
+ica.plot_properties(aud1person, picks=5)
 
 # Plot the topographic maps of the independent components
 ica.plot_components()
