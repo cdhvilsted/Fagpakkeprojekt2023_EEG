@@ -7,7 +7,7 @@ import os
 
 randomSeed = random.seed(1)
 
-directory = os.path.dirname(os.path.abspath(__file__))+"/EEGproj-main/EEGproj-main/data_preproc"
+directory = os.path.dirname(os.path.abspath(__file__))+"/EEGproj-main/data_preproc"
 
 print("Working directory:  ", directory[:30],"/.../",directory[-57:], " ") # just printing the path to the data
 
@@ -25,12 +25,27 @@ Aud_event = ["Tagi_A", "Tabi_A"] #only auditive
 
 Vis_event = ["Tagi_V","Tabi_V"] #only visual
 
+
 aud1person = None
-file = Speech_files[2]
+file = Speech_files[1]
 path = directory +"/"+ str(file)
 path = path.replace(" ","")
-raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
-raw = raw.crop(tmin=-0.1)
+rawStart = mne.io.read_epochs_eeglab(path, montage_units='dm')
+rawStart = rawStart.crop(tmin=-0.1)
+
+
+for i in range(1,len(Speech_files)):
+    file = Speech_files[i]
+    path = directory +"/"+ str(file)
+    path = path.replace(" ","")
+    raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
+    raw = raw.crop(tmin=-0.1)
+
+    rawStart = mne.concatenate_epochs([rawStart, raw])
+
+print(rawStart)
+
+
 
 event1 = raw[Aud_event[0]] # tabi
 event2 = raw[Aud_event[1]] # tagi (maybe)
