@@ -33,7 +33,6 @@ path = path.replace(" ","")
 rawStart = mne.io.read_epochs_eeglab(path, montage_units='dm')
 rawStart = rawStart.crop(tmin=-0.1)
 
-
 for i in range(1,len(Speech_files)):
     file = Speech_files[i]
     path = directory +"/"+ str(file)
