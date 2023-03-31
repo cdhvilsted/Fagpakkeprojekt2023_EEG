@@ -28,12 +28,13 @@ Vis_event = ["Tagi_V","Tabi_V"] #only visual
 
 aud1person = None
 
-for i in range(Speech_files)
-file = Speech_files[2]
-path = directory +"/"+ str(file)
-path = path.replace(" ","")
-raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
-raw = raw.crop(tmin=-0.1)
+for i in range(Speech_files):
+
+    file = Speech_files[i]
+    path = directory +"/"+ str(file)
+    path = path.replace(" ","")
+    raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
+    raw = raw.crop(tmin=-0.1)
 
 event1 = raw[Aud_event[0]] # tabi
 event2 = raw[Aud_event[1]] # tagi (maybe)
