@@ -37,14 +37,19 @@ for i in range(1,len(Speech_files)):
     file = Speech_files[i]
     path = directory +"/"+ str(file)
     path = path.replace(" ","")
+
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1)
 
+    event1 = raw[Aud_event[0]]  # tabi
+    event2 = raw[Aud_event[1]]  # tagi (maybe)
+
+    raw = mne.concatenate_epochs([event1, event2])
+
     rawStart = mne.concatenate_epochs([rawStart, raw])
 
+
 print(rawStart)
-
-
 
 event1 = raw[Aud_event[0]] # tabi
 event2 = raw[Aud_event[1]] # tagi (maybe)
