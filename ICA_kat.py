@@ -1,44 +1,209 @@
-from data_load_cec import *
 import sklearn as sk
 import mne
 import numpy as np
 import random
-from t_testing_cec import *
+import os
+import matplotlib.pyplot as plt
+import pandas as pd
 
 randomSeed = random.seed(1)
 
-from sklearn.decomposition import FastICA
-print(all_datans)
+directory = os.path.dirname(os.path.abspath(__file__))+"/EEGproj-main/EEGproj-main/data_preproc"
+
+print("Working directory:  ", directory[:30],"/.../",directory[-57:], " ") # just printing the path to the data
+
+Speech = ["PP03","PP09", "PP10", "PP11", "PP12", "PP13", "PP14", "PP15",
+          "PP16", "PP17", "PP20", "PP25", "PP26", "PP28"]
+
+Non_speech = ["PP02", "PP04", "PP05", "PP06", "PP07", "PP08", "PP18", "PP19",
+              "PP21", "PP22", "PP23", "PP24", "PP27", "PP29"]
+Speech_files = [ i + "_4adj.set" for i in Speech]
+Non_speech_files = [i + "_4adj.set" for i in Non_speech]
+common = ['AF4', 'AFz', 'C1', 'C2', 'C3', 'C4', 'CP1', 'CP2', 'CP3', 'CP4',
+       'CP5', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'FC1', 'FC2', 'FCz',
+       'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P7', 'PO3',
+       'PO4', 'PO7', 'PO8', 'POz', 'Pz']
+Aud_event = ["Tagi_A", "Tabi_A"] #only auditive
+
+Vis_event = ["Tagi_V","Tabi_V"] #only visual
+
+aud1person = None
+file = Speech_files[1]
+path = directory +"/"+ str(file)
+path = path.replace(" ","")
+raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
+montage = raw.get_montage()
+raw.pick_channels(common)
+raw = raw.crop(tmin=-0.1)
+print(raw.info)
+event1 = raw[Aud_event[0]] # tagi
+event2 = raw[Aud_event[1]] # tabi
+aud1person = mne.concatenate_epochs([event1, event2])
+print(np.shape(aud1person))
+aud1person=aud1person.drop([i for i in range(130,len(aud1person))])
+print(np.shape(aud1person))
 
 
-# concatenate the epochs
-data_matrix_s = np.concatenate((N1_As, N1_ics, N1_cs, P2_As, P2_ics, P2_cs))
-data_matrix_ns = np.concatenate((N1_Ans, N1_icns, N1_cns, P2_Ans, P2_icns, P2_cns))
+liste = np.array(aud1person)
+print(np.shape(liste))
+for i in range(1,len(Speech_files)):
+    file = Speech_files[i]
+    path = directory + '/' + str(file)
+    path = path.replace(" ","")
+    raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
+    raw.pick_channels(common)
+    raw = raw.crop(tmin=-0.1)
+    event1 = raw[Aud_event[0]] # tagi
+    event2 = raw[Aud_event[1]] # tabi 
+    aud1person = mne.concatenate_epochs([event1, event2])
+    print(len(aud1person))
+    aud1person=aud1person.drop([i for i in range(130,len(aud1person))])
+    liste = np.hstack((liste,aud1person))
 
-# change to epochs
-epochs = mne.io.RawArray(data_matrix_ns, mne.create_info(common, 512))
 
+print("shape:",np.shape(liste[0]))
+#print(liste[0])
+print(np.shape(liste))
 
+'''
 # Create MNE Epochs object
+reject = dict(mag=5e-12, grad=4000e-13)
+
 
 # Apply ICA to the Epochs object
-ica = mne.preprocessing.ICA(n_components=28, method='fastica',random_state=randomSeed) # 14 components for each group
+ica = mne.preprocessing.ICA(n_components=28, method='fastica',random_state=1) # 14 components for each group
 #ica.fit(mne.EpochsArray(data_matrix_s, mne.create_info(Speech, 128)))
 
 
 #change data_matrix_ns to epochs
 """
-Make sure that the shape is (n_epochs, n_channels, n_samples) 
+Make sure that the shape is (n_epochs, n_channels, n_samples(time)) 
 and that n_channels and n_samples are consistent with the in
 -formation contained in the common variable that you use to cre
 -ate the info argument in mne.create_info(common, 512).
 """
 
-ica.fit(epochs)
+ica.fit(liste, reject = reject)
+# make a for loop for i in range
+print([ica.get_explained_variance_ratio(liste, components=i, ch_type='eeg') for i in range(0,28)])
+
+ica.plot_properties(liste, picks=5)
 
 # Plot the topographic maps of the independent components
 ica.plot_components()
 
+'''
 
+import numpy as np
+from picard import picard
+from multiviewica_master.multiviewica.reduce_data import reduce_data
+from sklearn.utils.extmath import randomized_svd
 
+def groupica(
+    X,
+    n_components=None,
+    dimension_reduction="pca",
+    max_iter=1000,
+    random_state=None,
+    tol=1e-7,
+    ortho=False,
+    extended=False,
+):
+    """
+    Performs PCA on concatenated data across groups (ex: subjects)
+    and apply ICA on reduced data.
+    Parameters
+    ----------
+    X : np array of shape (n_groups, n_features, n_samples)
+        Training vector, where n_groups is the number of groups,
+        n_samples is the number of samples and
+        n_components is the number of components.
+    n_components : int, optional
+        Number of components to extract.
+        If None, no dimension reduction is performed
+    dimension_reduction: str, optional
+        if srm: use srm to reduce the data
+        if pca: use group specific pca to reduce the data
+    max_iter : int, optional
+        Maximum number of iterations to perform
+    random_state : int, RandomState instance or None, optional (default=None)
+        Used to perform a random initialization. If int, random_state is
+        the seed used by the random number generator; If RandomState
+        instance, random_state is the random number generator; If
+        None, the random number generator is the RandomState instance
+        used by np.random.
+    tol : float, optional
+        A positive scalar giving the tolerance at which
+        the un-mixing matrices are considered to have converged.
+    ortho: bool, optional
+        If True, uses Picard-O. Otherwise, uses the standard Picard.
+    extended: None or bool, optional
+        If True, uses the extended algorithm to separate sub and
+        super-Gaussian sources.
+        By default, True if ortho == True, False otherwise.
+    Returns
+    -------
+    P : np array of shape (n_groups, n_components, n_features)
+        P is the projection matrix that projects data in reduced space
+    W : np array of shape (n_groups, n_components, n_components)
+        Estimated un-mixing matrices
+    S : np array of shape (n_components, n_samples)
+        Estimated source
+    See also
+    --------
+    permica
+    multiviewica
+    """
+    P, X = reduce_data(
+        X, n_components=n_components, dimension_reduction=dimension_reduction
+    )
+    n_pb, p, n = X.shape
+    X_concat = np.vstack(X)
+    U, S, V = randomized_svd(X_concat, n_components=p)
+    X_reduced = np.diag(S).dot(V)
+    U = np.split(U, n_pb, axis=0)
+    K, W, S = picard(
+        X_reduced,
+        ortho=ortho,
+        extended=extended,
+        centering=False,
+        max_iter=max_iter,
+        tol=tol,
+        random_state=random_state,
+    )
+    scale = np.linalg.norm(S, axis=1)
+    S = S / scale[:, None]
+    W = np.array([S.dot(np.linalg.pinv(x)) for x in X])
+    return P, W, S
 
+P, W, S = groupica(liste, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
+P = np.swapaxes(P,1,2)
+print(np.shape(P))
+print(np.shape(W))
+print(np.shape(S))
+biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
+print(montage.ch_names)
+to_drop_ch = list(set(montage.ch_names)-set(common))
+print(len(to_drop_ch))
+print(np.shape(P[0]))
+df = pd.DataFrame(P[0].T,columns=common)
+df[to_drop_ch] = 0
+df = df*1e-6
+df = df.reindex(columns=montage.ch_names)
+print(df['Cz'])
+#print(biosemi_montage.ch_names)
+info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
+comp1 = mne.EvokedArray(df.to_numpy().T,info)
+comp1.set_montage(montage)
+comp1 = comp1.drop_channels(to_drop_ch)
+print(len(comp1.ch_names))
+#print(comp1[times=0])
+comp1.plot_topomap(times=[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9])
+#comp1.plot()
+#common1 =[i for i in biosemi_montage if i in common]
+#print(np.shape(comp1))
+#comp1 = mne.Epochs(comp1)
+#print(type(comp1))
+#print(comp1)
+#comp1.plot_topomap(times=[0],sphere='eeglab')
+plt.show()

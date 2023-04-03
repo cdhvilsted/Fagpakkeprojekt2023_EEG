@@ -27,7 +27,7 @@ common = ['AF4', 'AFz', 'C1', 'C2', 'C3', 'C4', 'CP1', 'CP2', 'CP3', 'CP4',
        'CP5', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'FC1', 'FC2', 'FCz',
        'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P7', 'PO3',
        'PO4', 'PO7', 'PO8', 'POz', 'Pz']
-
+print(len(common))
 Speech_files = [ i + "_4adj.set" for i in Speech]
 Non_speech_files = [i + "_4adj.set" for i in Non_speech]
 
