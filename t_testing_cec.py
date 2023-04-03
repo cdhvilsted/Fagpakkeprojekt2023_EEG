@@ -5,9 +5,10 @@ import mne
 import numpy as np
 
 # using scipy: t-test used compares the means of two related samples of scores
-# N component
+# N1 component
 times = np.arange(-0.1,1,step=1/128)
 N_comp_min = (np.where(times <= 0.05))[-1][-1] # 50 ms
+
 N_comp_max = (np.where(times >= 0.15))[0][0] # 150 ms
 print('N indexes: ' + str(N_comp_min) + ',' + str(N_comp_max))
 
@@ -33,7 +34,8 @@ for i in range(len(data_As_ind)):
     P2_As.append(np.max(data_As_ind[i][0][P_comp_min:P_comp_max]))
     P2_ics.append(np.max(data_AVics_ind[i][0][P_comp_min:P_comp_max]))
     P2_cs.append(np.max(data_AVcs_ind[i][0][P_comp_min:P_comp_max]))
-    
+
+
 diff_P_A_ic = [abs((P2_As[i] - P2_ics[i])*(10**6)) for i in range(len(N1_As))]
 total_diff_Paic = np.mean(diff_P_A_ic)
 
