@@ -58,7 +58,7 @@ for i in range(1,len(Speech_files)):
     aud1person = mne.concatenate_epochs([event1, event2])
     print(len(aud1person))
     aud1person=aud1person.drop([i for i in range(130,len(aud1person))])
-    liste = np.hstack((liste,aud1person))
+    liste = np.hstack((liste,aud1person)) #hstack giver (trials, personer*antal kanaler, timesteps)
 
 
 print("shape:",np.shape(liste[0]))
@@ -176,8 +176,13 @@ def groupica(
     W = np.array([S.dot(np.linalg.pinv(x)) for x in X])
     return P, W, S
 
+
+#liste = np.swapaxes(liste,0,1)
+liste = np.swapaxes(liste, 0,2)
+print('liste_shape',np.shape(liste))
 P, W, S = groupica(liste, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
-P = np.swapaxes(P,1,2)
+
+#P = np.swapaxes(P,1,2)
 print(np.shape(P))
 print(np.shape(W))
 print(np.shape(S))
@@ -185,20 +190,27 @@ biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0
 print(montage.ch_names)
 to_drop_ch = list(set(montage.ch_names)-set(common))
 print(len(to_drop_ch))
-print(np.shape(P[0]))
-df = pd.DataFrame(P[0].T,columns=common)
-df[to_drop_ch] = 0
-df = df*1e-6
-df = df.reindex(columns=montage.ch_names)
-print(df['Cz'])
+print(np.shape(P[0:36,0]))
+
+
+fig, axs = plt.subplots(1,10, figsize=(15,12))
+#plt.subplots_adjust(hspace=0.5)
+axs = axs.ravel()
+for i in range(10):
+
+    df = pd.DataFrame(P[36:72,i].T,columns=common)
+    df[to_drop_ch] = 0
+    df = df*1e-6
+    df = df.reindex(columns=montage.ch_names)
+    #print(df['Cz'])
 #print(biosemi_montage.ch_names)
-info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
-comp1 = mne.EvokedArray(df.to_numpy().T,info)
-comp1.set_montage(montage)
-comp1 = comp1.drop_channels(to_drop_ch)
-print(len(comp1.ch_names))
+    info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
+    comp1 = mne.EvokedArray(df.to_numpy().T,info)
+    comp1.set_montage(montage)
+    comp1 = comp1.drop_channels(to_drop_ch)
+    #print(len(comp1.ch_names))
 #print(comp1[times=0])
-comp1.plot_topomap(times=[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9])
+    comp1.plot_topomap(times=[0],axes=axs[i],colorbar=False,show=False)
 #comp1.plot()
 #common1 =[i for i in biosemi_montage if i in common]
 #print(np.shape(comp1))
