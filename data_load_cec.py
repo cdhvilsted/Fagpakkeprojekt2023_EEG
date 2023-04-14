@@ -127,18 +127,18 @@ for file in Speech_files:
     # Baseline the output
     #mne.baseline.rescale(raw_array, raw.times, (-0.1, 1), mode='mean', copy=False)
 
-    data_As += raw[Aud_event[0]].average().apply_baseline(baseline).get_data(picks=chan)[0]+raw[Aud_event[1]].average().apply_baseline(baseline).get_data(picks=chan)[0]
-    data_Vs += raw[Vis_event[0]].average().apply_baseline(baseline).get_data(picks=chan)[0]+raw[Vis_event[1]].average().apply_baseline(baseline).get_data(picks=chan)[0]
-    data_AVcs +=raw[AV_c[0]].average().apply_baseline(baseline).get_data(picks=chan)[0]+raw[AV_c[1]].average().apply_baseline(baseline).get_data(picks=chan)[0]
-    data_AVics +=raw[AV_ic[0]].average().apply_baseline(baseline).get_data(picks=chan)[0]+raw[AV_ic[1]].average().apply_baseline(baseline).get_data(picks=chan)[0]
+    data_As += raw[Aud_event[0], Aud_event[1]].average().apply_baseline(baseline).get_data(picks=chan)[0] #+raw[Aud_event[1]].average().apply_baseline(baseline).get_data(picks=chan)[0]
+    data_Vs += raw[Vis_event[0], Vis_event[1]].average().apply_baseline(baseline).get_data(picks=chan)[0] #+raw[Vis_event[1]].average().apply_baseline(baseline).get_data(picks=chan)[0]
+    data_AVcs +=raw[AV_c[0], AV_c[1]].average().apply_baseline(baseline).get_data(picks=chan)[0] # +raw[AV_c[1]].average().apply_baseline(baseline).get_data(picks=chan)[0]
+    data_AVics +=raw[AV_ic[0], AV_ic[1]].average().apply_baseline(baseline).get_data(picks=chan)[0] # +raw[AV_ic[1]].average().apply_baseline(baseline).get_data(picks=chan)[0]
     #data_V.append(raw[Vis_event[0]].average().get_data(picks=chan)[0]+raw[Vis_event[1]].average().get_data(picks=chan)[0])
     #data_AVc.append(raw[AV_c[0]].average().get_data(picks=chan)[0]+raw[AV_c[1]].average().get_data(picks=chan)[0])
     #data_AVic.append(raw[AV_ic[0]].average().get_data(picks=chan)[0]+raw[AV_ic[1]].average().get_data(picks=chan)[0])
     
-    data_As_ind.append(raw[Aud_event[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[Aud_event[1]].apply_baseline(baseline).get_data(picks=chan)[0])
-    data_Vs_ind.append(raw[Vis_event[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[Vis_event[1]].apply_baseline(baseline).get_data(picks=chan)[0])
-    data_AVcs_ind.append(raw[AV_c[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[AV_c[1]].apply_baseline(baseline).get_data(picks=chan)[0])
-    data_AVics_ind.append(raw[AV_ic[0]].apply_baseline(baseline).get_data(picks=chan)[0]+raw[AV_ic[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_As_ind.append(raw[Aud_event[0], Aud_event[1]].apply_baseline(baseline).get_data(picks=chan)[0]) #+raw[Aud_event[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_Vs_ind.append(raw[Vis_event[0], Vis_event[1]].apply_baseline(baseline).get_data(picks=chan)[0]) #+raw[Vis_event[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_AVcs_ind.append(raw[AV_c[0], AV_c[1]].apply_baseline(baseline).get_data(picks=chan)[0]) #+raw[AV_c[1]].apply_baseline(baseline).get_data(picks=chan)[0])
+    data_AVics_ind.append(raw[AV_ic[0], AV_ic[1]].apply_baseline(baseline).get_data(picks=chan)[0]) #+raw[AV_ic[1]].apply_baseline(baseline).get_data(picks=chan)[0])
     
 '''
 data_As =data_As/len(Speech_files)
@@ -148,10 +148,10 @@ data_AVics=data_AVics/len(Speech_files)-data_Vs
 '''
 
 
-data_Vs=data_Vs/(len(Speech_files)*2)
-data_As =data_As/(len(Speech_files)*2)
-data_AVcs =(data_AVcs)/(len(Speech_files)*2)-data_Vs
-data_AVics=(data_AVics)/(len(Speech_files)*2)-data_Vs
+data_Vs=data_Vs/(len(Speech_files))
+data_As =data_As/(len(Speech_files))
+data_AVcs =(data_AVcs)/(len(Speech_files))-data_Vs
+data_AVics=(data_AVics)/(len(Speech_files))-data_Vs
 all_datas = np.concatenate((data_As,data_Vs,data_AVics,data_AVcs))
 #mne.baseline.rescale(all_datas.get_data(),times=times,baseline=(-0.1,0), mode='mean', copy=False)
 

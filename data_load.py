@@ -134,7 +134,7 @@ for file in Speech_files:
     path = path.replace(" ","")
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1)
-    raw = raw.apply_baseline(interval) 
+    #raw = raw.apply_baseline(interval) 
     #raw = mne.baseline.rescale(raw,times=times,baseline=interval)
 
     data_As += raw[Aud_event[0]].average().get_data(picks=chan)[0]+raw[Aud_event[1]].average().get_data(picks=chan)[0]
@@ -157,7 +157,7 @@ for file in Non_speech_files:
     raw = mne.io.read_epochs_eeglab(path, montage_units='dm')
     raw = raw.crop(tmin=-0.1)
     print('hej')
-    raw = raw.apply_baseline(interval) #one baseline method
+    #raw = raw.apply_baseline(interval) #one baseline method
     #raw = mne.baseline.rescale(raw,times=)
     data_Ans += raw[Aud_event[0]].average().get_data(picks=chan)[0]+raw[Aud_event[1]].average().get_data(picks=chan)[0]
     data_Vns += raw[Vis_event[0]].average().get_data(picks=chan)[0]+raw[Vis_event[1]].average().get_data(picks=chan)[0]
@@ -176,13 +176,13 @@ all_datans = np.concatenate((data_Ans,data_Vns,data_AVicns,data_AVcns))
 
 x = np.arange(-0.1,1,step=1/128)
 fig, (ax1,ax2) = plt.subplots(1,2)
-ax1.axvline(x=0.1,color='r')
+#ax1.axvline(x=0.1,color='r')
 ax1.plot(x,data_As,color='k')
 ax1.plot(x,data_AVics,color='k',linestyle='dashed')
 ax1.plot(x,data_AVcs,color='0.8')
 ax1.set_yticks(np.arange(-6e-6,8e-6,2e-6))
 ax1.invert_yaxis()
-ax2.axvline(x=0.1,color='r')
+#ax2.axvline(x=0.1,color='r')
 ax2.plot(x,data_Ans,color='k')
 ax2.plot(x,data_AVicns,color='k',linestyle='dashed')
 ax2.plot(x,data_AVcns,color='0.8')

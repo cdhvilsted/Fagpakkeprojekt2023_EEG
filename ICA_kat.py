@@ -39,9 +39,9 @@ print(raw.info)
 event1 = raw[Aud_event[0]] # tagi
 event2 = raw[Aud_event[1]] # tabi
 aud1person = mne.concatenate_epochs([event1, event2])
-print(np.shape(aud1person))
 aud1person=aud1person.drop([i for i in range(130,len(aud1person))])
-print(np.shape(aud1person))
+aud1person = aud1person.get_data()
+aud1person = np.swapaxes(aud1person, 1,2).reshape(36,-1)
 
 
 liste = np.array(aud1person)
@@ -56,13 +56,17 @@ for i in range(1,len(Speech_files)):
     event1 = raw[Aud_event[0]] # tagi
     event2 = raw[Aud_event[1]] # tabi 
     aud1person = mne.concatenate_epochs([event1, event2])
-    print(len(aud1person))
     aud1person=aud1person.drop([i for i in range(130,len(aud1person))])
-    liste = np.hstack((liste,aud1person)) #hstack giver (trials, personer*antal kanaler, timesteps)
+    aud1person = aud1person.get_data()
+    aud1person = np.swapaxes(aud1person, 1,2).reshape(36,-1)
+    print('Aud1person shape is:', np.shape(aud1person))
+    liste = np.dstack((liste,aud1person)) #hstack giver (trials, personer*antal kanaler, timesteps)
 
+
+liste = np.swapaxes(liste,0,1)
+liste = np.swapaxes(liste, 0,2)
 
 print("shape:",np.shape(liste[0]))
-#print(liste[0])
 print(np.shape(liste))
 
 '''
@@ -76,12 +80,11 @@ ica = mne.preprocessing.ICA(n_components=28, method='fastica',random_state=1) # 
 
 
 #change data_matrix_ns to epochs
-"""
-Make sure that the shape is (n_epochs, n_channels, n_samples(time)) 
-and that n_channels and n_samples are consistent with the in
--formation contained in the common variable that you use to cre
--ate the info argument in mne.create_info(common, 512).
-"""
+
+# Make sure that the shape is (n_epochs, n_channels, n_samples(time)) 
+# and that n_channels and n_samples are consistent with the in
+# -formation contained in the common variable that you use to cre
+# -ate the info argument in mne.create_info(common, 512).
 
 ica.fit(liste, reject = reject)
 # make a for loop for i in range
@@ -91,7 +94,6 @@ ica.plot_properties(liste, picks=5)
 
 # Plot the topographic maps of the independent components
 ica.plot_components()
-
 '''
 
 import numpy as np
@@ -177,28 +179,37 @@ def groupica(
     return P, W, S
 
 
-#liste = np.swapaxes(liste,0,1)
-liste = np.swapaxes(liste, 0,2)
-print('liste_shape',np.shape(liste))
 P, W, S = groupica(liste, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
+# n_components=10, dimension_reduction="pca",
+# der udføres PCA på data
 
-#P = np.swapaxes(P,1,2)
-print(np.shape(P))
-print(np.shape(W))
+print(np.shape(P)) # projection matrix / full unmixing matrix
+print(np.shape(W)) # unmixing matrix
 print(np.shape(S))
+
+A = np.linalg.inv(W) # mixing matrix (laver data til dimensions reduceret data)
+print(np.shape(A))
+
+# data for hver forsøgsperson kommer af at gange mixing matrix med source for hver forsøgsperson fx X0 = A[0,0,:] @ S[0,:]
+
+# sorter efter varians i hver component
+#print(A[0,0,:])
+var_S = np.var(S, axis=1)
+print(np.argsort(var_S)) # sort index from smallest to highest variance
+
+
 biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
 print(montage.ch_names)
 to_drop_ch = list(set(montage.ch_names)-set(common))
 print(len(to_drop_ch))
-print(np.shape(P[0:36,0]))
 
 
 fig, axs = plt.subplots(1,10, figsize=(15,12))
 #plt.subplots_adjust(hspace=0.5)
 axs = axs.ravel()
 for i in range(10):
-
-    df = pd.DataFrame(P[36:72,i].T,columns=common)
+    print(np.shape(P[0,i]))
+    df = pd.DataFrame(P[0,i],columns=common)
     df[to_drop_ch] = 0
     df = df*1e-6
     df = df.reindex(columns=montage.ch_names)
