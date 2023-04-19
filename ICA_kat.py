@@ -156,7 +156,7 @@ def groupica(
     permica
     multiviewica
     """
-    P, X = reduce_data(
+    G, X = reduce_data(
         X, n_components=n_components, dimension_reduction=dimension_reduction
     )
     n_pb, p, n = X.shape
@@ -176,7 +176,7 @@ def groupica(
     scale = np.linalg.norm(S, axis=1)
     S = S / scale[:, None]
     W = np.array([S.dot(np.linalg.pinv(x)) for x in X])
-    return P, W, S
+    return G, W, S
 
 
 P, W, S = groupica(liste, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
