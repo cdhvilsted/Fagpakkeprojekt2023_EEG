@@ -290,6 +290,19 @@ print(explainedVariances)
 
 # I have a matrix explainedVariances of shape (14, 36). for each row sort the indexes such that the largest values of explainedVariances is first index
 
-sorted = np.argsort(explainedVariances, axis=1)
-print(sorted)
+sortedIndex = np.argsort(explainedVariances, axis=1)
 
+
+sorted = np.sort(explainedVariances, axis=1)
+
+print(sortedIndex)
+
+#for each row in sorted find the index of how many columns from column 0 is needed for the row sum to be over 0.9
+
+# make an empty array of shape(14,1)
+n_components = np.zeros((14,1))
+
+for i in range(14):
+    n_components[i,0] = np.argmax(np.cumsum(sorted[i,:])>= 0.95)+1
+
+print(n_components)
