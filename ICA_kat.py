@@ -23,6 +23,7 @@ common = ['AF4', 'AFz', 'C1', 'C2', 'C3', 'C4', 'CP1', 'CP2', 'CP3', 'CP4',
        'CP5', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'FC1', 'FC2', 'FCz',
        'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P7', 'PO3',
        'PO4', 'PO7', 'PO8', 'POz', 'Pz']
+
 Aud_event = ["Tagi_A", "Tabi_A"] #only auditive
 
 Vis_event = ["Tagi_V","Tabi_V"] #only visual
@@ -95,6 +96,12 @@ ica.plot_properties(liste, picks=5)
 # Plot the topographic maps of the independent components
 ica.plot_components()
 '''
+path = "/Users/idaraagart/Library/CloudStorage/OneDrive-Personligt/DTU/4th_semester/fagprojekt/Fagpakkeprojekt2023_EEG/"
+
+
+os.chdir(path)
+print("Current working directory: {0}".format(os.getcwd()))
+
 
 import numpy as np
 from picard import picard
@@ -178,8 +185,13 @@ def groupica(
     W = np.array([S.dot(np.linalg.pinv(x)) for x in X])
     return G, W, S
 
+R, X = reduce_data(
+        liste, n_components=10, dimension_reduction="pca"
+    )
 
-P, W, S = groupica(liste, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
+
+
+G, W, S = groupica(X, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
 # n_components=10, dimension_reduction="pca",
 # der udføres PCA på data
 
@@ -189,6 +201,9 @@ print(np.shape(S))
 
 A = np.linalg.inv(W) # mixing matrix (laver data til dimensions reduceret data)
 print(np.shape(A))
+
+
+
 
 # data for hver forsøgsperson kommer af at gange mixing matrix med source for hver forsøgsperson fx X0 = A[0,0,:] @ S[0,:]
 
