@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import scipy
-import torch
+#import torch
 
 randomSeed = random.seed(1)
 
@@ -264,3 +264,32 @@ for j in range(14):
 #print(comp1)
 #comp1.plot_topomap(times=[0],sphere='eeglab')
 plt.show()
+
+
+
+# Making the explained variance
+R2, X2 = reduce_data(
+        liste, n_components=36, dimension_reduction="pca"
+    )
+
+# calculate the eigenvalues of G
+
+# make an empty array of shape(14,36)
+explainedVariances = np.zeros((14,36))
+
+for i in range(14):
+    eig_R = np.real(np.linalg.eigvals(R2[i,:,:]))
+
+    # calculate the explained variance for each component
+    for componentInEig_R in range(36):
+        explainedVariance = (eig_R[componentInEig_R]**2).sum()/(eig_R**2).sum()
+        explainedVariances[i,componentInEig_R] = explainedVariance
+
+
+print(explainedVariances)
+
+# I have a matrix explainedVariances of shape (14, 36). for each row sort the indexes such that the largest values of explainedVariances is first index
+
+sorted = np.argsort(explainedVariances, axis=1)
+print(sorted)
+
