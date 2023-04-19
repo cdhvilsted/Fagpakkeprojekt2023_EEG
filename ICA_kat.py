@@ -96,11 +96,6 @@ ica.plot_properties(liste, picks=5)
 # Plot the topographic maps of the independent components
 ica.plot_components()
 '''
-path = "/Users/idaraagart/Library/CloudStorage/OneDrive-Personligt/DTU/4th_semester/fagprojekt/Fagpakkeprojekt2023_EEG/"
-
-
-os.chdir(path)
-print("Current working directory: {0}".format(os.getcwd()))
 
 
 import numpy as np
@@ -166,6 +161,7 @@ def groupica(
     G, X = reduce_data(
         X, n_components=n_components, dimension_reduction=dimension_reduction
     )
+
     n_pb, p, n = X.shape
     X_concat = np.vstack(X)
     U, S, V = randomized_svd(X_concat, n_components=p)
@@ -201,6 +197,8 @@ print(np.shape(S))
 
 A = np.linalg.inv(W) # mixing matrix (laver data til dimensions reduceret data)
 print(np.shape(A))
+
+Y = W @ np.linalg.inv(G).T @ np.linalg.inv(R).T
 
 
 
