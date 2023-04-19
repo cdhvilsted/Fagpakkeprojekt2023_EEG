@@ -5,6 +5,8 @@ import random
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
+import scipy
+import torch
 
 randomSeed = random.seed(1)
 
@@ -185,30 +187,42 @@ R, X = reduce_data(
         liste, n_components=10, dimension_reduction="pca"
     )
 
-
-
 G, W, S = groupica(X, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
-# n_components=10, dimension_reduction="pca",
 # der udføres PCA på data
 
-print(np.shape(P)) # projection matrix / full unmixing matrix
+#print(np.shape(P)) # projection matrix / full unmixing matrix
 print(np.shape(W)) # unmixing matrix
 print(np.shape(S))
 
-A = np.linalg.inv(W) # mixing matrix (laver data til dimensions reduceret data)
-print(np.shape(A))
+#A = np.linalg.inv(W) # mixing matrix (laver data til dimensions reduceret data)
+#print(np.shape(A))
 
-Y = W @ np.linalg.inv(G).T @ np.linalg.inv(R).T
+print('G:', np.shape(G))
+print('R:', np.shape(R))
 
+print('liste:', np.shape(liste))
+print('X', np.shape(X))
+#print('X2', np.shape(X2))
+print(np.shape(S[0,:]))
 
+#Y = W@G@R
+# make an empty array of shape(14,10,36)
+back_Y = np.zeros((14,10,36))
 
+for i in range(14):
+    #y = Y[i,:,:]
+    result = W[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
+    #result = np.linalg.solve(y, S[i,:])
+    back_Y[i,:,:] = result
+
+print(np.shape(back_Y))
 
 # data for hver forsøgsperson kommer af at gange mixing matrix med source for hver forsøgsperson fx X0 = A[0,0,:] @ S[0,:]
 
 # sorter efter varians i hver component
 #print(A[0,0,:])
-var_S = np.var(S, axis=1)
-print(np.argsort(var_S)) # sort index from smallest to highest variance
+#var_S = np.var(S, axis=1)
+#print(np.argsort(var_S)) # sort index from smallest to highest variance
 
 
 biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
@@ -217,24 +231,31 @@ to_drop_ch = list(set(montage.ch_names)-set(common))
 print(len(to_drop_ch))
 
 
-fig, axs = plt.subplots(1,10, figsize=(15,12))
+fig, ax = plt.subplots(14,10, figsize=(15,12))
 #plt.subplots_adjust(hspace=0.5)
-axs = axs.ravel()
-for i in range(10):
-    print(np.shape(P[0,i]))
-    df = pd.DataFrame(P[0,i],columns=common)
-    df[to_drop_ch] = 0
-    df = df*1e-6
-    df = df.reindex(columns=montage.ch_names)
-    #print(df['Cz'])
-#print(biosemi_montage.ch_names)
-    info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
-    comp1 = mne.EvokedArray(df.to_numpy().T,info)
-    comp1.set_montage(montage)
-    comp1 = comp1.drop_channels(to_drop_ch)
-    #print(len(comp1.ch_names))
-#print(comp1[times=0])
-    comp1.plot_topomap(times=[0],axes=axs[i],colorbar=False,show=False)
+print(len(common))
+axs = ax.ravel()
+count = 0
+for j in range(14):
+    for i in range(10):
+        # make back_Y a list
+        data = np.ndarray.tolist(back_Y[j,i])
+        df = pd.DataFrame([data],columns=common)
+        df[to_drop_ch] = 0
+        df = df*1e-6
+        df = df.reindex(columns=montage.ch_names)
+        info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
+        comp1 = mne.EvokedArray(df.to_numpy().T,info)
+        comp1.set_montage(montage)
+        comp1 = comp1.drop_channels(to_drop_ch)
+        comp1.plot_topomap(times=[0],axes=axs[count],colorbar=False,show=False)
+        ax[j, i].set_title(' ')
+        ax[0, i].set_ylabel('Subject ' + str(i))
+        ax[j, 0].set_xlabel('Component ' + str(j))
+        ax[j, 0].xaxis.set_label_position('top')
+        print(axs[count])
+        print(count)
+        count += 1
 #comp1.plot()
 #common1 =[i for i in biosemi_montage if i in common]
 #print(np.shape(comp1))
