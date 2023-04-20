@@ -4,7 +4,7 @@
 import numpy as np
 import scipy
 from picard import picard
-from multiviewica.reduce_data import reduce_data
+from multiviewica_master.multiviewica.reduce_data import reduce_data
 
 
 def permica(
