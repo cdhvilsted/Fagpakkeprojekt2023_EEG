@@ -194,8 +194,8 @@ G, W, S = groupica(X, n_components=10, dimension_reduction="pca", max_iter=1000,
 print(np.shape(W)) # unmixing matrix
 print(np.shape(S))
 
-#A = np.linalg.inv(W) # mixing matrix (laver data til dimensions reduceret data)
-#print(np.shape(A))
+A = np.linalg.inv(W) # mixing matrix (laver data til dimensions reduceret data)
+print('A: ', np.shape(A))
 
 print('G:', np.shape(G))
 print('R:', np.shape(R))
@@ -213,6 +213,7 @@ for i in range(14):
     #y = Y[i,:,:]
     result = W[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
     #result = np.linalg.solve(y, S[i,:])
+    #result = A[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
     back_Y[i,:,:] = result
 
 print(np.shape(back_Y))
@@ -253,7 +254,6 @@ for j in range(14):
         ax[0, i].set_ylabel('Subject ' + str(i))
         ax[j, 0].set_xlabel('Component ' + str(j))
         ax[j, 0].xaxis.set_label_position('top')
-        print(axs[count])
         print(count)
         count += 1
 #comp1.plot()
