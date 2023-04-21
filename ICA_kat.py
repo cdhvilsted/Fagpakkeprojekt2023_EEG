@@ -160,13 +160,14 @@ def groupica(
     permica
     multiviewica
     """
-    G, X = reduce_data(
+    R, X = reduce_data(
         X, n_components=n_components, dimension_reduction=dimension_reduction
     )
-
+    print(X.shape)
     n_pb, p, n = X.shape
     X_concat = np.vstack(X)
-    U, S, V = randomized_svd(X_concat, n_components=p)
+    U, S, V = randomized_svd(X_concat, n_components=140)
+    G = U
     X_reduced = np.diag(S).dot(V)
     U = np.split(U, n_pb, axis=0)
     K, W, S = picard(
@@ -181,20 +182,20 @@ def groupica(
     scale = np.linalg.norm(S, axis=1)
     S = S / scale[:, None]
     W = np.array([S.dot(np.linalg.pinv(x)) for x in X])
-    return G, W, S
+    return G, W, S, R
 
-R, X = reduce_data(
-        liste, n_components=10, dimension_reduction="pca"
-    )
-
-G, W, S = groupica(X, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
+#R, X = reduce_data(
+#        liste, n_components=10, dimension_reduction="pca"
+#    )
+X = liste
+G, W, S, R = groupica(X, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
 # der udføres PCA på data
 
 #print(np.shape(P)) # projection matrix / full unmixing matrix
 print(np.shape(W)) # unmixing matrix
 print(np.shape(S))
 
-A = np.linalg.inv(W) # mixing matrix (laver data til dimensions reduceret data)
+A = np.linalg.pinv(W) # mixing matrix (laver data til dimensions reduceret data)
 print('A: ', np.shape(A))
 
 print('G:', np.shape(G))
@@ -211,7 +212,8 @@ back_Y = np.zeros((14,10,36))
 
 for i in range(14):
     #y = Y[i,:,:]
-    result = W[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
+    #result = W[i,:,:] @ np.transpose(np.linalg.pinv(G)) @ np.transpose(np.linalg.pinv(R[i,:,:]))
+    result = R[i,:,:] @ np.transpose(G) @ A[i,:,:]
     #result = np.linalg.solve(y, S[i,:])
     #result = A[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
     back_Y[i,:,:] = result
