@@ -162,15 +162,20 @@ def groupica(
     """
     #remove mean value from X in second dimension
     for i in range(14):
-        X[i] =X[i] np.mean(X[i],axis=1)
+        X[i] =X[i]-np.mean(X[i], axis=1, keepdims=True)
+
     R, X = reduce_data(
         X, n_components=n_components, dimension_reduction=dimension_reduction
     )
     print(X.shape)
     n_pb, p, n = X.shape
     X_concat = np.vstack(X)
+
+    X = X.T
+
+
     U, S, V = randomized_svd(X_concat, n_components=140)
-    G = U
+    G = V.T
     X_reduced = np.diag(S).dot(V)
     U = np.split(U, n_pb, axis=0)
     K, W, S = picard(
