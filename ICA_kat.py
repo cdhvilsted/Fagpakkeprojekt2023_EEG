@@ -160,6 +160,9 @@ def groupica(
     permica
     multiviewica
     """
+    #remove mean value from X in second dimension
+    for i in range(14):
+        X[i] =X[i] np.mean(X[i],axis=1)
     R, X = reduce_data(
         X, n_components=n_components, dimension_reduction=dimension_reduction
     )
