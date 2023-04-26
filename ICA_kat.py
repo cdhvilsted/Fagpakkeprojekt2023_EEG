@@ -167,19 +167,25 @@ def groupica(
     R, X = reduce_data(
         X, n_components=n_components, dimension_reduction=dimension_reduction
     )
-    print(X.shape)
+    print('X shape', X.shape)
     n_pb, p, n = X.shape
     X_concat = np.vstack(X)
 
-    X = X.T
+    #X = X.transpose(0,2,1)
+    print('X shape after', X.shape)
 
-
-    U, S, V = randomized_svd(X_concat, n_components=140)
+    print('X_concat shape', X_concat.shape)
+    '''
+    U, S, V = randomized_svd(X_concat.T, n_components=140)
+    print('U shape:', U.shape)
     G = V.T
+    print('G shape:', G.shape)
     X_reduced = np.diag(S).dot(V)
-    U = np.split(U, n_pb, axis=0)
+    '''
+    #X_reduced = X_concat.T.dot(V)
+    #U = np.split(U, n_pb, axis=0)
     K, W, S = picard(
-        X_reduced,
+        X_concat,
         ortho=ortho,
         extended=extended,
         centering=False,
@@ -187,10 +193,12 @@ def groupica(
         tol=tol,
         random_state=random_state,
     )
+    '''
     scale = np.linalg.norm(S, axis=1)
     S = S / scale[:, None]
     W = np.array([S.dot(np.linalg.pinv(x)) for x in X])
-    return G, W, S, R
+    '''
+    return K, W, S, R
 
 #R, X = reduce_data(
 #        liste, n_components=10, dimension_reduction="pca"
@@ -203,7 +211,7 @@ G, W, S, R = groupica(X, n_components=10, dimension_reduction="pca", max_iter=10
 print(np.shape(W)) # unmixing matrix
 print(np.shape(S))
 
-A = np.linalg.pinv(W) # mixing matrix (laver data til dimensions reduceret data)
+A = np.linalg.pinv(W@np.transpose(G)) # mixing matrix (laver data til dimensions reduceret data)
 print('A: ', np.shape(A))
 
 print('G:', np.shape(G))
@@ -213,6 +221,7 @@ print('liste:', np.shape(liste))
 print('X', np.shape(X))
 #print('X2', np.shape(X2))
 print(np.shape(S[0,:]))
+print('shape of S:',np.shape(S))
 
 #Y = W@G@R
 # make an empty array of shape(14,10,36)
@@ -221,7 +230,7 @@ back_Y = np.zeros((14,10,36))
 for i in range(14):
     #y = Y[i,:,:]
     #result = W[i,:,:] @ np.transpose(np.linalg.pinv(G)) @ np.transpose(np.linalg.pinv(R[i,:,:]))
-    result = R[i,:,:] @ np.transpose(G) @ A[i,:,:]
+    result = R[i,:,:].T @ np.transpose(G) @ A
     #result = np.linalg.solve(y, S[i,:])
     #result = A[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
     back_Y[i,:,:] = result
