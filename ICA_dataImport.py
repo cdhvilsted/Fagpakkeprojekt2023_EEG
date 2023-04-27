@@ -52,7 +52,8 @@ aud1person = np.swapaxes(aud1person, 1,2).reshape(36,-1)
 
 
 EEGdata = np.array(aud1person)
-print("Dimensions of the data for 1 person:", np.shape(EEGdata))
+print("Dimensions of the data for 1 person:")
+print(("channels, epoch*timesteps"), np.shape(EEGdata))
 for i in range(1,len(Speech_files)):
     file = Speech_files[i]
     path = directory + '/' + str(file)
