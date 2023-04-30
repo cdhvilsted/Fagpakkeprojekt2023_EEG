@@ -73,5 +73,5 @@ for i in range(1,len(Speech_files)):
 EEGdata = np.swapaxes(EEGdata,0,1)
 EEGdata = np.swapaxes(EEGdata, 0,2)
 
-
+print("")
 print("Dimesions for data for all persons", np.shape(EEGdata))
