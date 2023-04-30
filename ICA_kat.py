@@ -167,6 +167,7 @@ def groupica(
     R, X = reduce_data(
         X, n_components=n_components, dimension_reduction=dimension_reduction
     )
+
     print('X shape', X.shape)
     n_pb, p, n = X.shape
     X_concat = np.vstack(X)

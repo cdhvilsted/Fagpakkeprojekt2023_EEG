@@ -42,13 +42,8 @@ def PCA(X,reduced_dim, plot = True):
     # output: PCA of the matrix
     # reduced_dim: number of dimensions to reduce to
 
-
     # center the data
     X_tilde = center_data(X)
-
-
-
-
 
     # PCA by computing SVD of Y
     U, S, V = SVD(X_tilde)
@@ -69,25 +64,33 @@ def PCA(X,reduced_dim, plot = True):
 
 
 def ICA(X, U, S, V):
-# this function takes a matrix and returns the ICA of the matrix
+    # this function takes a matrix and returns the ICA of the matrix
     # input: X: matrix
     # output: ICA of the matrix
 
     # center the data
-    Y = center_data(X)
-
 
     # compute the whitening matrix
     W = np.diag(1 / S) @ U.T
 
+
     # compute the unmixing matrix
-    A = V.T @ np.diag(S)
+    A = V @ np.diag(S)
 
     # compute the ICA
-    Z = W @ Y
+    Z = W @ X
 
     return Z, W, A
 
+def reconstruction(Z, W, A):
+    # this function takes a matrix and returns the reconstruction of the matrix
+    # input: Z: matrix
+    # output: reconstruction of the matrix
+
+    # compute the reconstruction
+    X_tilde = A @ Z
+
+    return X_tilde
 
 
 
