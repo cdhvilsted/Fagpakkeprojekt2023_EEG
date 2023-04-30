@@ -68,7 +68,7 @@ def PCA(X,reduced_dim, plot = True):
 
 
 
-def ICA(X, U, S):
+def ICA(X, U, S, V):
 # this function takes a matrix and returns the ICA of the matrix
     # input: X: matrix
     # output: ICA of the matrix
