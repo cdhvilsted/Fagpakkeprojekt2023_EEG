@@ -3,7 +3,6 @@
 
 # packages
 import numpy as np
-from scipy.linalg import svd
 import mne
 import matplotlib.pyplot as plt
 
@@ -30,6 +29,13 @@ def center_data(X):
     # input: X: matrix
     # output: centered matrix
     return X - np.ones((len(X), 1)) * X.mean(axis=0)
+
+def SVD(X):
+    U, S, Vt = np.linalg.svd(X, full_matrices=False)
+    V = Vt.T  # transpose Vt to obtain V
+
+    return U, S, V
+
 def PCA(X,reduced_dim, plot = True):
     # this function takes a matrix and returns the PCA of the matrix
     # input: X: matrix
@@ -37,41 +43,54 @@ def PCA(X,reduced_dim, plot = True):
     # reduced_dim: number of dimensions to reduce to
 
     # center the data
-    Y = center_data(X)
+    X_tilde = center_data(X)
 
     # PCA by computing SVD of Y
-    U, S, V = svd(Y, full_matrices=False)
+    U, S, V = SVD(X_tilde)
+
+
+    #explained variances
     rho = (S * S) / (S * S).sum()
 
     reduced_X = U[:,:reduced_dim] @ np.diag(S[:reduced_dim])
+
+
     # if you want to plot the variance explained
     if plot:
         plotCumulativeExplainedVariances(rho)
 
-    return U[:,:reduced_dim], S[:reduced_dim], V[:reduced_dim,:], reduced_X, rho
+    return U, S, V, reduced_X, rho
 
 
 
-def ICA(X, U, S):
-# this function takes a matrix and returns the ICA of the matrix
+def ICA(X, U, S, V):
+    # this function takes a matrix and returns the ICA of the matrix
     # input: X: matrix
     # output: ICA of the matrix
 
     # center the data
-    Y = center_data(X)
-
 
     # compute the whitening matrix
     W = np.diag(1 / S) @ U.T
 
+
     # compute the unmixing matrix
-    A = V.T @ np.diag(S)
+    A = V @ np.diag(S)
 
     # compute the ICA
-    Z = W @ Y
+    Z = W @ X
 
     return Z, W, A
 
+def reconstruction(Z, W, A):
+    # this function takes a matrix and returns the reconstruction of the matrix
+    # input: Z: matrix
+    # output: reconstruction of the matrix
+
+    # compute the reconstruction
+    X_tilde = A @ Z
+
+    return X_tilde
 
 
 
