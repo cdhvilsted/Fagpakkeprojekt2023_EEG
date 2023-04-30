@@ -173,7 +173,6 @@ def groupica(
 
     #X = X.transpose(0,2,1)
     print('X shape after', X.shape)
-
     print('X_concat shape', X_concat.shape)
     '''
     U, S, V = randomized_svd(X_concat.T, n_components=140)
@@ -207,6 +206,11 @@ X = liste
 G, W, S, R = groupica(X, n_components=10, dimension_reduction="pca", max_iter=1000, random_state=None, tol=1e-7, ortho=False, extended=False)
 # der udføres PCA på data
 
+'''
+w = np.dot(W, G)
+A_dot = np.dot(w.T, np.linalg.inv(np.dot(w, w.T)))
+print('A_dot: ', np.shape(A_dot))'''
+
 #print(np.shape(P)) # projection matrix / full unmixing matrix
 print(np.shape(W)) # unmixing matrix
 print(np.shape(S))
@@ -230,7 +234,7 @@ back_Y = np.zeros((14,10,36))
 for i in range(14):
     #y = Y[i,:,:]
     #result = W[i,:,:] @ np.transpose(np.linalg.pinv(G)) @ np.transpose(np.linalg.pinv(R[i,:,:]))
-    result = R[i,:,:].T @ np.transpose(G) @ A
+    result = R[i,:,:].T @ G @ A
     #result = np.linalg.solve(y, S[i,:])
     #result = A[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
     back_Y[i,:,:] = result
