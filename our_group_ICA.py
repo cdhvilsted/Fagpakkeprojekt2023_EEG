@@ -60,37 +60,44 @@ def PCA(X,reduced_dim, plot = True):
         plotCumulativeExplainedVariances(rho)
 
     return U, S, V, reduced_X, rho
+def g(x):
+    return np.tanh(x)
+def g_der(x):
+    return 1 - g(x) * g(x)
+def calculate_new_w(w, X):
+    w_new = (X * g(np.dot(w.T, X))).mean(axis=1) - g_der(np.dot(w.T, X)).mean() * w
+    w_new /= np.sqrt((w_new ** 2).sum())
+    return w_new
 
+def ICA(X):
 
+    components_nr = X.shape[0]
+    W = np.zeros((components_nr, components_nr), dtype=X.dtype)
+    tolerance = 1e-5
+    for i in range(components_nr):
 
-def ICA(X, U, S, V):
-    # this function takes a matrix and returns the ICA of the matrix
-    # input: X: matrix
-    # output: ICA of the matrix
+        w = np.random.rand(components_nr)
 
-    # center the data
+        for j in range(100):
 
-    # compute the whitening matrix
-    W = np.diag(1 / S) @ U.T
+            w_new = calculate_new_w(w, X)
 
+            if i >= 1:
+                w_new -= np.dot(np.dot(w_new, W[:i].T), W[:i])
 
-    # compute the unmixing matrix
-    A = V @ np.diag(S)
+            distance = np.abs(np.abs((w * w_new).sum()) - 1)
 
-    # compute the ICA
-    Z = W @ X
+            w = w_new
 
-    return Z, W, A
+            if distance < tolerance:
+                break
 
-def reconstruction(Z, W, A):
-    # this function takes a matrix and returns the reconstruction of the matrix
-    # input: Z: matrix
-    # output: reconstruction of the matrix
+        W[i, :] = w
 
-    # compute the reconstruction
-    X_tilde = A @ Z
+    S = np.dot(W, X)
 
-    return X_tilde
+    return S
+
 
 
 

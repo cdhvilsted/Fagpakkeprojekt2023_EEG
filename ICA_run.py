@@ -3,7 +3,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, reconstruction
+import pandas as pd
+import mne
+from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA
 ###############################################################################
 
 # Import data
@@ -62,39 +64,28 @@ print("")
 print("# This is the ICA step: #")
 print("")
 
-Z, W, A = ICA(G.T, U, S, V)
-print("Z: ", Z.shape, "     W: ", W.shape, "     A: ", A.shape)
+S = ICA(G)
 print("")
 
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
 print("")
 print("# Reconstruction: #")
 print("")
-
-S = np.zeros((14,10,36))
-
-for i in range(14):
-    # reconstruct the data to S
-    result = reconstruction(Z[i*10:(i+1)*10,:], W, A)
-    S[i] = result.T
-
-print(np.shape(S))
+print("S shape: ", S.shape)
+print(S)
 
 biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
-print(montage.ch_names)
 to_drop_ch = list(set(montage.ch_names)-set(common))
-print(len(to_drop_ch))
 
 
 fig, ax = plt.subplots(14,10, figsize=(15,12))
 
-print(len(common))
+
 axs = ax.ravel()
 count = 0
 for j in range(14):
     for i in range(10):
-        # make back_Y a list
-        data = np.ndarray.tolist(S[j,i])
+        data = np.ndarray.tolist(np.array(S[j,:]))
         df = pd.DataFrame([data],columns=common)
         df[to_drop_ch] = 0
         df = df*1e-6
