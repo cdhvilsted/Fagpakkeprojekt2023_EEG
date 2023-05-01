@@ -5,7 +5,7 @@
 import numpy as np
 import mne
 import matplotlib.pyplot as plt
-import picard as pic
+from picard import picard
 #import fast ICA
 from sklearn.decomposition import FastICA
 
@@ -81,8 +81,9 @@ def ICA(X, R, G, typeICA):
 
     # picard is the fastest!!!!!!!!!!!! :)
     elif typeICA == "picard":
-        K, W, Y = pic.Picard(X, whiten = False)
-
+        print(picard(X, whiten = False, ortho=False,extended=False,centering=False,max_iter=1000,tol=1e-7))
+        S = 2
+        W = 2
         w = np.dot(W, G)
         A = np.dot(w.T, np.linalg.inv(np.dot(w, w.T)))
 
@@ -91,7 +92,8 @@ def ICA(X, R, G, typeICA):
         print("Error: type must be either 'fastICA' or 'picard'")
         return
 
-
+    # reconstruct the signals
+    S = np.dot(A, X)
 
     return S, A, W
 

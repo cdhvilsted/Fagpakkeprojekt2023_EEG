@@ -72,7 +72,9 @@ print("")
 print("# This is the ICA step: #")
 print("")
 
-S, A, W = ICA(X_whithen, R, G, typeICA = "picard")
+S, A, W = ICA(X_whithen, R, G, "picard")
+
+
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
 
 print("")
