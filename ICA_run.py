@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import mne
 from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA
+from tqdm import tqdm
+import time
+
 ###############################################################################
 
 # Import data
@@ -53,7 +56,7 @@ print("")
 print("# This is the second PCA: #")
 print("")
 
-U, S, V, reduced_X, rho = PCA(X_concat, reduced_dim = 140, plot=False)
+U, S, V, reduced_X, rho = PCA(X_concat, reduced_dim = 10, plot=False)
 
 G = U
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
@@ -72,7 +75,7 @@ print("")
 print("# This is the ICA step: #")
 print("")
 
-S, A, W = ICA(X_whithen, R, G, "picard")
+S, A, W = ICA(X_whithen, R, G, "fastICA")
 
 
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
@@ -80,11 +83,6 @@ print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape
 print("")
 
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
-print("")
-print("# Reconstruction: #")
-print("")
-print("S shape: ", S.shape)
-print(S)
 
 biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
 to_drop_ch = list(set(montage.ch_names)-set(common))
@@ -92,13 +90,15 @@ to_drop_ch = list(set(montage.ch_names)-set(common))
 
 fig, ax = plt.subplots(14,10, figsize=(15,12))
 
+components = ['C1','C2','C3','C4','C5','C6','C7','C8','C9','C10']
 
 axs = ax.ravel()
 count = 0
-for j in range(14):
+for j in tqdm(range(14), desc="Outer Loop"):
     for i in range(10):
-        data = np.ndarray.tolist(np.array(S[j,:]))
-        df = pd.DataFrame([data],columns=common)
+        time.sleep(0.05)
+        data = np.ndarray.tolist(np.array(S[j,i]))
+        df = pd.DataFrame([data],columns=components)
         df[to_drop_ch] = 0
         df = df*1e-6
         df = df.reindex(columns=montage.ch_names)
@@ -111,7 +111,6 @@ for j in range(14):
         ax[0, i].set_ylabel('Subject ' + str(i))
         ax[j, 0].set_xlabel('Component ' + str(j))
         ax[j, 0].xaxis.set_label_position('top')
-        print(count)
         count += 1
 
 plt.show()

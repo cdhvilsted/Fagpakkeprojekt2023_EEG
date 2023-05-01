@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from picard import picard
 #import fast ICA
 from sklearn.decomposition import FastICA
+from tqdm import tqdm
+import time
 
 ###############################################################################
 
@@ -63,37 +65,46 @@ def PCA(X,reduced_dim, plot = True):
         plotCumulativeExplainedVariances(rho)
 
     return U, S, V, reduced_X, rho
-def g(x):
+
+
+def _g(x):
     return np.tanh(x)
-def g_der(x):
-    return 1 - g(x) * g(x)
-def calculate_new_w(w, X):
-    w_new = (X * g(np.dot(w.T, X))).mean(axis=1) - g_der(np.dot(w.T, X)).mean() * w
-    w_new /= np.sqrt((w_new ** 2).sum())
-    return w_new
+
+def _gprime(x):
+    return 1 - np.tanh(x)**2
 
 def ICA(X, R, G, typeICA):
     # this function takes a matrix and returns the ICA of the matrix
     if typeICA == "fastICA":
-        ica = FastICA(n_components=10)
-        S = ica.fit_transform(X)  # Reconstruct signals
-        A = ica.mixing_  # Get estimated mixing matrix
-
-    # picard is the fastest!!!!!!!!!!!! :)
-    elif typeICA == "picard":
-        print(picard(X, whiten = False, ortho=False,extended=False,centering=False,max_iter=1000,tol=1e-7))
-        S = 2
-        W = 2
-        w = np.dot(W, G)
-        A = np.dot(w.T, np.linalg.inv(np.dot(w, w.T)))
+        max_iter = 200
+        tol = 1e-4
+        n_samples, n_features = X.shape
+        W = np.zeros((140, n_features), dtype=X.dtype)
+        # Main loop
+        for i in tqdm(range(140)):
+            w = np.random.randn(10)
+            for j in range(max_iter):
+                wx = np.dot(w, X.T)
+                gwtx = _g(wx).mean()
+                g_wtx = _gprime(wx)
+                w_new = (X * g_wtx).T @ wx / n_samples - g_wtx.mean() * w
+                w_new = w_new / np.sqrt((w_new ** 2).sum())
+                if i > 0:
+                    w_new = w_new - np.dot(np.dot(w_new, W[:i].T), W[:i])
+                lim = np.abs(np.abs((w * w_new).sum()) - 1)
+                w = w_new
+                if lim < tol:
+                    break
+        W[i, :] = w
+        S = np.dot(W, X)
 
     else:
         # Throw error
-        print("Error: type must be either 'fastICA' or 'picard'")
+        print("Error: type must be 'fastICA'")
         return
 
     # reconstruct the signals
-    S = np.dot(A, X)
+    A = np.linalg.pinv(W)
 
     return S, A, W
 
