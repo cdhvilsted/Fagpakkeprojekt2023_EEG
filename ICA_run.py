@@ -23,17 +23,23 @@ print("Dimensions chosen: ", 18330)
 print("")
 
 X_pca1 = np.array([])
+R = np.array([])
 print("doing PCA on each subject")
 for i in range(0, 14):
    U, S, V, reduced_X, rho = PCA(EEGdata[i].T, reduceDimensions, plot=False)
    if len(X_pca1) == 0:
         X_pca1 = reduced_X
-   else: X_pca1 = np.hstack((reduced_X,X_pca1))
+        R = U
+
+   else:
+       X_pca1 = np.hstack((reduced_X,X_pca1))
+       R = np.hstack((U,R))
+
 
 
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
-R = X_pca1.T
-print("R shape: ", R.shape)
+X_concat = X_pca1.T
+print("X_concat shape: ", X_concat.shape)
 
 
 
@@ -47,10 +53,12 @@ print("")
 print("# This is the second PCA: #")
 print("")
 
-U, S, V, reduced_X, rho = PCA(R, reduced_dim = 140, plot=False)
+U, S, V, reduced_X, rho = PCA(X_concat, reduced_dim = 140, plot=False)
+
+G = U
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
-G = reduced_X
-print("G shape: ", G.shape)
+X_whithen = reduced_X
+print("X shape: ", X_whithen.shape)
 
 
 
@@ -64,7 +72,9 @@ print("")
 print("# This is the ICA step: #")
 print("")
 
-S = ICA(G)
+S, A, W = ICA(X_whithen, R, G, typeICA = "picard")
+print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
+
 print("")
 
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")

@@ -5,6 +5,9 @@
 import numpy as np
 import mne
 import matplotlib.pyplot as plt
+import picard as pic
+#import fast ICA
+from sklearn.decomposition import FastICA
 
 ###############################################################################
 
@@ -69,34 +72,28 @@ def calculate_new_w(w, X):
     w_new /= np.sqrt((w_new ** 2).sum())
     return w_new
 
-def ICA(X):
+def ICA(X, R, G, typeICA):
+    # this function takes a matrix and returns the ICA of the matrix
+    if typeICA == "fastICA":
+        ica = FastICA(n_components=10)
+        S = ica.fit_transform(X)  # Reconstruct signals
+        A = ica.mixing_  # Get estimated mixing matrix
 
-    components_nr = X.shape[0]
-    W = np.zeros((components_nr, components_nr), dtype=X.dtype)
-    tolerance = 1e-5
-    for i in range(components_nr):
+    # picard is the fastest!!!!!!!!!!!! :)
+    elif typeICA == "picard":
+        K, W, Y = pic.Picard(X, whiten = False)
 
-        w = np.random.rand(components_nr)
+        w = np.dot(W, G)
+        A = np.dot(w.T, np.linalg.inv(np.dot(w, w.T)))
 
-        for j in range(100):
+    else:
+        # Throw error
+        print("Error: type must be either 'fastICA' or 'picard'")
+        return
 
-            w_new = calculate_new_w(w, X)
 
-            if i >= 1:
-                w_new -= np.dot(np.dot(w_new, W[:i].T), W[:i])
 
-            distance = np.abs(np.abs((w * w_new).sum()) - 1)
-
-            w = w_new
-
-            if distance < tolerance:
-                break
-
-        W[i, :] = w
-
-    S = np.dot(W, X)
-
-    return S
+    return S, A, W
 
 
 
