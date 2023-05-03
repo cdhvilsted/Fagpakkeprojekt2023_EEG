@@ -86,14 +86,10 @@ print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 back_Y = np.zeros((14,10,36))
 
-for i in range(14):
-    #y = Y[i,:,:]
-    #result = W[i,:,:] @ np.transpose(np.linalg.pinv(G)) @ np.transpose(np.linalg.pinv(R[i,:,:]))
-    result = #??????
-    #result = np.linalg.solve(y, S[i,:])
-    #result = A[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
-    back_Y[i,:,:] = result
 
+for i in range(14):
+    for j in range(10):
+        back_Y[i, j, :] = np.matmul(A @ S[:, i].reshape((-1, 1)), np.ones((1, 36)))
 print(np.shape(back_Y))
 
 # data for hver forsøgsperson kommer af at gange mixing matrix med source for hver forsøgsperson fx X0 = A[0,0,:] @ S[0,:]
