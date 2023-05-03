@@ -84,21 +84,42 @@ print("")
 
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
+back_Y = np.zeros((14,10,36))
+
+for i in range(14):
+    #y = Y[i,:,:]
+    #result = W[i,:,:] @ np.transpose(np.linalg.pinv(G)) @ np.transpose(np.linalg.pinv(R[i,:,:]))
+    result = R[i,:].T @ G @ A
+    #result = np.linalg.solve(y, S[i,:])
+    #result = A[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
+    back_Y[i,:,:] = result
+
+print(np.shape(back_Y))
+
+# data for hver forsøgsperson kommer af at gange mixing matrix med source for hver forsøgsperson fx X0 = A[0,0,:] @ S[0,:]
+
+# sorter efter varians i hver component
+#print(A[0,0,:])
+#var_S = np.var(S, axis=1)
+#print(np.argsort(var_S)) # sort index from smallest to highest variance
+
+
 biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
+print(montage.ch_names)
 to_drop_ch = list(set(montage.ch_names)-set(common))
+print(len(to_drop_ch))
 
 
 fig, ax = plt.subplots(14,10, figsize=(15,12))
-
-components = ['C1','C2','C3','C4','C5','C6','C7','C8','C9','C10']
-
+#plt.subplots_adjust(hspace=0.5)
+print(len(common))
 axs = ax.ravel()
 count = 0
-for j in tqdm(range(14), desc="Outer Loop"):
+for j in range(14):
     for i in range(10):
-        time.sleep(0.05)
-        data = np.ndarray.tolist(np.array(S[j,i]))
-        df = pd.DataFrame([data],columns=components)
+        # make back_Y a list
+        data = np.ndarray.tolist(back_Y[j,i])
+        df = pd.DataFrame([data],columns=common)
         df[to_drop_ch] = 0
         df = df*1e-6
         df = df.reindex(columns=montage.ch_names)
@@ -111,10 +132,16 @@ for j in tqdm(range(14), desc="Outer Loop"):
         ax[0, i].set_ylabel('Subject ' + str(i))
         ax[j, 0].set_xlabel('Component ' + str(j))
         ax[j, 0].xaxis.set_label_position('top')
+        print(count)
         count += 1
-
+#comp1.plot()
+#common1 =[i for i in biosemi_montage if i in common]
+#print(np.shape(comp1))
+#comp1 = mne.Epochs(comp1)
+#print(type(comp1))
+#print(comp1)
+#comp1.plot_topomap(times=[0],sphere='eeglab')
 plt.show()
-
 
 
 
