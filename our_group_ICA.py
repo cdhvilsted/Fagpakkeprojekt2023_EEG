@@ -103,6 +103,7 @@ def ICA(X, R, G, typeICA):
             tol=tol,
             random_state=random_state,
         )
+        A = np.linalg.pinv(W)
 
     else:
         # Throw error
