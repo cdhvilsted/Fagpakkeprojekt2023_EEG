@@ -66,7 +66,7 @@ def PCA(X,reduced_dim, plot = True):
 
     return U, S, V, reduced_X, rho
 
-
+import sklearn
 def _g(x):
     return np.tanh(x)
 
@@ -76,27 +76,33 @@ def _gprime(x):
 def ICA(X, R, G, typeICA):
     # this function takes a matrix and returns the ICA of the matrix
     if typeICA == "fastICA":
-        max_iter = 200
-        tol = 1e-4
-        n_samples, n_features = X.shape
-        W = np.zeros((140, n_features), dtype=X.dtype)
-        # Main loop
-        for i in tqdm(range(140)):
-            w = np.random.randn(10)
-            for j in range(max_iter):
-                wx = np.dot(w, X.T)
-                gwtx = _g(wx).mean()
-                g_wtx = _gprime(wx)
-                w_new = (X * g_wtx).T @ wx / n_samples - g_wtx.mean() * w
-                w_new = w_new / np.sqrt((w_new ** 2).sum())
-                if i > 0:
-                    w_new = w_new - np.dot(np.dot(w_new, W[:i].T), W[:i])
-                lim = np.abs(np.abs((w * w_new).sum()) - 1)
-                w = w_new
-                if lim < tol:
-                    break
-        W[i, :] = w
-        S = np.dot(W, X)
+        # fastICA
+        transform_ICA = sklearn.decomposition.FastICA(n_components = None,  whiten=False, fun='logcosh', max_iter=200, tol=0.0001)
+
+        # fit the model
+        S = transform_ICA.fit_transform(X)
+        A = transform_ICA.mixing_
+
+        W = np.linalg.pinv(A)
+
+        explained = np.var(S, axis = 0)
+        explained_ratio = explained / np.sum(explained)
+        sorted = np.argsort(explained_ratio)
+        print(np.max(explained))
+        print(sorted)
+
+    elif typeICA == "picard":
+        # use picard
+        W, S = picard(
+            X_concat,
+            ortho=ortho,
+            extended=extended,
+            centering=False,
+            max_iter=max_iter,
+            whiten= False,
+            tol=tol,
+            random_state=random_state,
+        )
 
     else:
         # Throw error
@@ -104,21 +110,5 @@ def ICA(X, R, G, typeICA):
         return
 
     # reconstruct the signals
-    A = np.linalg.pinv(W)
 
     return S, A, W
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

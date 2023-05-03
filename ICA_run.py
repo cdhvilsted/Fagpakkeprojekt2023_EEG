@@ -56,7 +56,7 @@ print("")
 print("# This is the second PCA: #")
 print("")
 
-U, S, V, reduced_X, rho = PCA(X_concat, reduced_dim = 10, plot=False)
+U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = 140, plot=False)
 
 G = U
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
