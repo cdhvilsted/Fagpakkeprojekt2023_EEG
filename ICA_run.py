@@ -89,7 +89,7 @@ back_Y = np.zeros((14,10,36))
 for i in range(14):
     #y = Y[i,:,:]
     #result = W[i,:,:] @ np.transpose(np.linalg.pinv(G)) @ np.transpose(np.linalg.pinv(R[i,:,:]))
-    result = R[i,:].T @ G @ A
+    result = #??????
     #result = np.linalg.solve(y, S[i,:])
     #result = A[i,:,:] @ np.transpose(np.linalg.pinv(G[i,:,:])) @ np.transpose(np.linalg.pinv(R[i,:,:]))
     back_Y[i,:,:] = result
