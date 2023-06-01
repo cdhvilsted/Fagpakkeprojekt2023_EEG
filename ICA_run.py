@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import mne
-from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA
+from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf
 from tqdm import tqdm
 import time
 
@@ -24,7 +24,7 @@ print("")
 reduceDimensions = 10
 print("Dimensions chosen: ", 18330)
 print("")
-
+print('EEG', EEGdata[0].shape)
 X_pca1 = np.array([])
 R = np.array([])
 print("doing PCA on each subject")
@@ -32,15 +32,18 @@ for i in range(0, 14):
    U, S, V, reduced_X, rho = PCA(EEGdata[i].T, reduceDimensions, plot=False)
    if len(X_pca1) == 0:
         X_pca1 = reduced_X
-        R = U
+        R = np.transpose(V[:,:reduceDimensions])
+        R_3d = np.transpose(V[:,:reduceDimensions])
 
    else:
        X_pca1 = np.hstack((reduced_X,X_pca1))
-       R = np.hstack((U,R))
+       R = np.vstack((np.transpose(V[:,:reduceDimensions]),R))
+       R_3d = np.dstack((np.transpose(V[:,:reduceDimensions]),R_3d))
 
 
+#print('reduced', (R[:,:,0]@EEGdata[0]).shape)
 
-print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
+print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'R:', R.shape, 'R_3d:', R_3d.shape)
 X_concat = X_pca1.T
 print("X_concat shape: ", X_concat.shape)
 
@@ -58,7 +61,7 @@ print("")
 
 U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = 140, plot=False)
 
-G = U
+G = V #changed from U to V
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
 X_whithen = reduced_X
 print("X shape: ", X_whithen.shape)
@@ -75,7 +78,7 @@ print("")
 print("# This is the ICA step: #")
 print("")
 
-S, A, W = ICA(X_whithen, R, G, "fastICA")
+S, A, W, sorted = ICA(X_whithen.T, R, G, "fastICA") #X needs shape (n_samples, n_features)
 
 
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
@@ -84,12 +87,32 @@ print("")
 
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
-back_Y = np.zeros((14,10,36))
+#try to plot ESP from S
+S = S.T
+S0 = S[sorted[-1]]
+S0 = S0.reshape(130,141)
+S0 = np.mean(S0, axis=0)
+plt.plot(np.arange(-0.1,1,step=1/128),S0)
+plt.show()
 
 
+back_Y = np.zeros((14,140,36))
+
+print(np.transpose(R_3d[:,:,0]).shape, 'should be 36,10')
+#print(np.transpose(G[:,10*(0):10*(0+1)]).shape, 'should be 10, 140')
+print(G[10*(0):10*(0+1),:].shape, 'should be 10, 140')
+
+print(np.linalg.pinv(W).shape, 'should be 140, 140')
+print((np.transpose(R_3d[:,:,0]) @ np.transpose(G[:,10*(0):10*(0+1)]) @ np.linalg.pinv(W)).shape)
+for i in range(14):
+    back_Y[i,:,:] = np.transpose(np.transpose(R_3d[:,:,i]) @ G[10*(0):10*(0+1),:] @ np.linalg.pinv(W))
+
+'''
 for i in range(14):
     for j in range(10):
-        back_Y[i, j, :] = np.matmul(A @ S[:, i].reshape((-1, 1)), np.ones((1, 36)))
+        #back_Y[i, j, :] = np.matmul(A @ S[:, i].reshape((-1, 1)), np.ones((1, 36)))
+        back_Y[i, j, :] = np.transpose(R_3d[:,:,j]) @ np.transpose(G[:,10*(i):10*(i+1)]) @ np.linalg.pinv(W)
+'''
 print(np.shape(back_Y))
 
 # data for hver forsøgsperson kommer af at gange mixing matrix med source for hver forsøgsperson fx X0 = A[0,0,:] @ S[0,:]
@@ -114,7 +137,7 @@ count = 0
 for j in range(14):
     for i in range(10):
         # make back_Y a list
-        data = np.ndarray.tolist(back_Y[j,i])
+        data = np.ndarray.tolist(back_Y[j,sorted[-(i+1)]])
         df = pd.DataFrame([data],columns=common)
         df[to_drop_ch] = 0
         df = df*1e-6
@@ -125,8 +148,8 @@ for j in range(14):
         comp1 = comp1.drop_channels(to_drop_ch)
         comp1.plot_topomap(times=[0],axes=axs[count],colorbar=False,show=False)
         ax[j, i].set_title(' ')
-        ax[0, i].set_ylabel('Subject ' + str(i))
-        ax[j, 0].set_xlabel('Component ' + str(j))
+        ax[0, i].set_ylabel('Component ' + str(i))
+        ax[j, 0].set_xlabel('Subject ' + str(j))
         ax[j, 0].xaxis.set_label_position('top')
         print(count)
         count += 1

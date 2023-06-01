@@ -57,8 +57,8 @@ def PCA(X,reduced_dim, plot = True):
     #explained variances
     rho = (S * S) / (S * S).sum()
 
-    reduced_X = U[:,:reduced_dim] @ np.diag(S[:reduced_dim])
-
+    #reduced_X = U[:,:reduced_dim] @ np.diag(S[:reduced_dim])
+    reduced_X = X_tilde @ V[:,:reduced_dim] 
 
     # if you want to plot the variance explained
     if plot:
@@ -85,10 +85,14 @@ def ICA(X, R, G, typeICA):
 
         W = np.linalg.pinv(A)
 
+        #pvaf
+        print(pvaf(X,S))
+
         explained = np.var(S, axis = 0)
         explained_ratio = explained / np.sum(explained)
         sorted = np.argsort(explained_ratio)
         print(np.max(explained))
+        print(sum(explained))
         print(sorted)
 
     elif typeICA == "picard":
@@ -112,4 +116,10 @@ def ICA(X, R, G, typeICA):
 
     # reconstruct the signals
 
-    return S, A, W
+    return S, A, W, sorted
+
+def pvaf(X,S):
+    pvaf = []
+    for i in range(140):
+        pvaf.append(100-100*np.mean(np.var(np.transpose(X)-S[:,i]))/np.mean(np.var(X)))
+    print("pvaf: ", pvaf, 'pvaf_sum', np.sum(pvaf))
