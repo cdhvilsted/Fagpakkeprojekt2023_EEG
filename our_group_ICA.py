@@ -10,6 +10,8 @@ from picard import picard
 from sklearn.decomposition import FastICA
 from tqdm import tqdm
 import time
+from ICA_dataImport import common, montage
+import pandas as pd
 
 ###############################################################################
 
@@ -38,7 +40,11 @@ def center_data(X):
 def SVD(X):
     U, S, Vt = np.linalg.svd(X, full_matrices=False)
     V = Vt.T  # transpose Vt to obtain V
-
+    S = np.diag(S)
+    
+    if (U @ S @ Vt != X).all():
+        print('Warning: U S Vt != X')
+    
     return U, S, V
 
 def PCA(X,reduced_dim, plot = True):
@@ -65,6 +71,35 @@ def PCA(X,reduced_dim, plot = True):
         plotCumulativeExplainedVariances(rho)
 
     return U, S, V, reduced_X, rho
+
+def ComponentPlot(data):
+    biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
+    to_drop_ch = list(set(montage.ch_names)-set(common))
+
+    fig, ax = plt.subplots(14,10, figsize=(15,12))
+    axs = ax.ravel()
+    count = 0
+    for j in range(14):
+        for i in range(10):
+            # make back_Y a list
+            data = np.ndarray.tolist(data)
+            df = pd.DataFrame([data],columns=common)
+            df[to_drop_ch] = 0
+            df = df*1e-6
+            df = df.reindex(columns=montage.ch_names)
+            info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
+            comp1 = mne.EvokedArray(df.to_numpy().T,info)
+            comp1.set_montage(montage)
+            comp1 = comp1.drop_channels(to_drop_ch)
+            comp1.plot_topomap(times=[0],axes=axs[count],colorbar=False,show=False)
+            ax[j, i].set_title(' ')
+            ax[0, i].set_ylabel('Component ' + str(i))
+            ax[j, 0].set_xlabel('Subject ' + str(j))
+            ax[j, 0].xaxis.set_label_position('top')
+            print(count)
+            count += 1
+    plt.show()
+
 
 import sklearn
 def _g(x):
