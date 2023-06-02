@@ -97,8 +97,8 @@ def componentPlot(R, numberComponents, numberSubjects):
     plt.show()
 
 
-def timeSeriesPlot():
-    U3 = U_3d[0, :, 2]
+def timeSeriesPlot(U_3d, component, subject):
+    U3 = U_3d[component, :, subject]
     print('U3:', U3.shape)
     # S0 = S[sorted[-1]]
     U3 = U3.reshape(141, 130)

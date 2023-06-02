@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import mne
-from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot
+from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot,timeSeriesPlot
 from tqdm import tqdm
 import time
 
