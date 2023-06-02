@@ -73,11 +73,9 @@ def PCA(X,reduced_dim, plot = True):
     return U, S, V, reduced_X, rho
 
 def componentPlot(R, numberComponents, numberSubjects):
-    biosemi_montage = mne.channels.make_standard_montage('standard_1020', head_size=0.15)
-    print(montage.ch_names)
+    biosemi_montage = mne.channels.make_standard_montage('standard_1020')
     to_drop_ch = list(set(montage.ch_names) - set(common))
-    print(len(to_drop_ch))
-    fig, ax = plt.subplots(numberComponents, numberSubjects, figsize=(10, 7))
+    fig, ax = plt.subplots(numberComponents, numberSubjects, figsize=(15, 5))
     axs = ax.ravel()
     pbar = tqdm(total=numberComponents * numberSubjects)  # Initialize the progress bar
     count = 0
@@ -86,21 +84,24 @@ def componentPlot(R, numberComponents, numberSubjects):
             data = R[i, :, j].tolist()
             df = pd.DataFrame([data], columns=common)
             df[to_drop_ch] = 0
+            #df = df*1e-6
             df = df.reindex(columns=montage.ch_names)
             info = mne.create_info(ch_names=montage.ch_names, sfreq=10, ch_types='eeg')
             comp1 = mne.EvokedArray(df.to_numpy().T, info)
             comp1.set_montage(montage)
             comp1 = comp1.drop_channels(to_drop_ch)
-            comp1.plot_topomap(times=[0], axes=axs[count], colorbar=False, show=False)
+            comp1.plot_topomap(times=[0], axes=axs[count], colorbar=False, show=False, sphere=0.12)
             pbar.update(1)  # Update the progress bar
+            ax[i, j].set_title(' ')
+            ax[0, j].set_xlabel('Subject ' + str(j))
+            ax[i, 0].set_ylabel('Component ' + str(i))
+            ax[0, j].xaxis.set_label_position('top')
             count += 1
     plt.show()
 
 
 def timeSeriesPlot(U_3d, component, subject):
     U3 = U_3d[component, :, subject]
-    print('U3:', U3.shape)
-    # S0 = S[sorted[-1]]
     U3 = U3.reshape(141, 130)
     U3 = np.mean(U3, axis=1)
     plt.gca().invert_yaxis()
@@ -109,8 +110,8 @@ def timeSeriesPlot(U_3d, component, subject):
 
 
 
-"""
-def ComponentPlot(data, numberComponents, numberSubjects):
+'''
+def ComponentPlot(R_3d, numberComponents, numberSubjects):
     biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
     to_drop_ch = list(set(montage.ch_names)-set(common))
 
@@ -137,7 +138,7 @@ def ComponentPlot(data, numberComponents, numberSubjects):
             print(count)
             count += 1
     plt.show()
-"""
+'''
 
 import sklearn
 def _g(x):
@@ -159,7 +160,7 @@ def ICA(X, R, G, typeICA):
         W = np.linalg.pinv(A)
 
         #pvaf
-        print(pvaf(X,S))
+        print(pvaf(X,W,140))
 
         explained = np.var(S, axis = 0)
         explained_ratio = explained / np.sum(explained)
@@ -191,8 +192,12 @@ def ICA(X, R, G, typeICA):
 
     return S, A, W, sorted
 
-def pvaf(X,S):
+# Percentage variance accounted for
+def pvaf(X, W, reduction_dim):
+    # Reconstructing data set
+    projection = np.dot(W, np.transpose(X))
+    #print('projection:', np.shape(projection))
     pvaf = []
-    for i in range(140):
-        pvaf.append(100-100*np.mean(np.var(np.transpose(X)-S[:,i]))/np.mean(np.var(X)))
+    for i in range(reduction_dim):
+        pvaf.append(100-100*np.mean(np.var(np.transpose(X)-projection[i,:]))/np.mean(np.var(X)))
     print("pvaf: ", pvaf, 'pvaf_sum', np.sum(pvaf))

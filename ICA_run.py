@@ -21,7 +21,7 @@ print("# This is the first PCA: #")
 print("")
 
 
-reduceDimensions = 36
+reduceDimensions = 10
 print("Dimensions chosen: ", 18330)
 print("")
 print('EEG', EEGdata[0].shape)
@@ -43,65 +43,13 @@ for i in range(0, 14):
        U_3d = np.dstack((U_3d, np.transpose(U[:,:reduceDimensions])))
 
 
-#print('reduced', (R[:,:,0]@EEGdata[0]).shape)
-
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'R:', R.shape, 'R_3d:', R_3d.shape)
 X_concat = X_pca1.T
 print("X_concat shape: ", X_concat.shape)
 
-componentPlot(R_3d, 10, 14)
-
-'''
-biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
-print(montage.ch_names)
-to_drop_ch = list(set(montage.ch_names)-set(common))
-print(len(to_drop_ch))
-'''
-'''
-fig, ax = plt.subplots(4,14, figsize=(10,7))
-#plt.subplots_adjust(hspace=0.5)
-print(len(common))
-axs = ax.ravel()
-count = 0
-for j in range(14):
-    for i in range(4):
-        # make back_Y a list
-        data = np.ndarray.tolist(R_3d[i,:,j])
-        df = pd.DataFrame([data],columns=common)
-        df[to_drop_ch] = 0
-        #df = df*1e-6
-        df = df.reindex(columns=montage.ch_names)
-        info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
-        comp1 = mne.EvokedArray(df.to_numpy().T,info)
-        comp1.set_montage(montage)
-        comp1 = comp1.drop_channels(to_drop_ch)
-        comp1.plot_topomap(times=[0],axes=axs[count],colorbar=False,show=False)
-        #ax[i, j].set_title(' ')
-        #ax[j, 0].set_xlabel('Component ' + str(i))
-        #ax[0, i].set_ylabel('Subject ' + str(j))
-        #ax[j, 0].xaxis.set_label_position('top')
-        print(count)
-        count += 1
-#comp1.plot()
-#common1 =[i for i in biosemi_montage if i in common]
-#print(np.shape(comp1))
-#comp1 = mne.Epochs(comp1)
-#print(type(comp1))
-#print(comp1)
-#comp1.plot_topomap(times=[0],sphere='eeglab')
-plt.show()'''
-
-
-U3 = U_3d[0,:,2]
-print('U3:', U3.shape)
-#S0 = S[sorted[-1]]
-U3 = U3.reshape(141,130)
-U3 = np.mean(U3, axis=1)
-plt.gca().invert_yaxis()
-plt.plot(np.arange(-0.1,1,step=1/128),U3)
-plt.show()
-
-
+# Plotting the components and timeseries
+#componentPlot(R_3d, 4, 14)
+#timeSeriesPlot(U_3d, 0, 2)
 
 print("")
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
@@ -113,14 +61,29 @@ print("")
 print("# This is the second PCA: #")
 print("")
 
-U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = 140, plot=False)
+reduced_dim2 = 140
+U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = reduced_dim2, plot=False)
 
 G = V #changed from U to V
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
 X_whithen = reduced_X
 print("X shape: ", X_whithen.shape)
 
+# Backprojecting PCA2 components into PCA1 space
+Gt = np.transpose(G)
+for i in range(14):
+    Gt1 = Gt[:,reduceDimensions*i:reduceDimensions*(i+1)]
+    Rt = R_3d[:,:,i] # Basisskiftematrix ?
+    comp = np.dot(Gt1, Rt) # Inverse matrix ????
+    
+    if i == 0:
+        comp_3d = comp
 
+    else:
+       comp_3d = np.dstack((comp_3d, comp))
+
+print('comp3d: ', comp_3d.shape)
+#componentPlot(comp_3d, 4, 14)
 
 
 print("")
@@ -132,7 +95,7 @@ print("")
 print("# This is the ICA step: #")
 print("")
 
-S, A, W, sorted = ICA(X_whithen.T, R, G, "fastICA") #X needs shape (n_samples, n_features)
+S, A, W, sorted = ICA(X_whithen, R, G, "fastICA") #X needs shape (n_samples, n_features)
 
 
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
@@ -175,50 +138,3 @@ print(np.shape(back_Y))
 #print(A[0,0,:])
 #var_S = np.var(S, axis=1)
 #print(np.argsort(var_S)) # sort index from smallest to highest variance
-
-
-biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
-print(montage.ch_names)
-to_drop_ch = list(set(montage.ch_names)-set(common))
-print(len(to_drop_ch))
-
-
-fig, ax = plt.subplots(14,10, figsize=(15,12))
-#plt.subplots_adjust(hspace=0.5)
-print(len(common))
-axs = ax.ravel()
-count = 0
-for j in range(14):
-    for i in range(10):
-        # make back_Y a list
-        data = np.ndarray.tolist(back_Y[j,sorted[-(i+1)]])
-        df = pd.DataFrame([data],columns=common)
-        df[to_drop_ch] = 0
-        df = df*1e-6
-        df = df.reindex(columns=montage.ch_names)
-        info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
-        comp1 = mne.EvokedArray(df.to_numpy().T,info)
-        comp1.set_montage(montage)
-        comp1 = comp1.drop_channels(to_drop_ch)
-        comp1.plot_topomap(times=[0],axes=axs[count],colorbar=False,show=False)
-        ax[j, i].set_title(' ')
-        ax[0, i].set_ylabel('Component ' + str(i))
-        ax[j, 0].set_xlabel('Subject ' + str(j))
-        ax[j, 0].xaxis.set_label_position('top')
-        print(count)
-        count += 1
-#comp1.plot()
-#common1 =[i for i in biosemi_montage if i in common]
-#print(np.shape(comp1))
-#comp1 = mne.Epochs(comp1)
-#print(type(comp1))
-#print(comp1)
-#comp1.plot_topomap(times=[0],sphere='eeglab')
-plt.show()
-
-
-
-
-
-
-
