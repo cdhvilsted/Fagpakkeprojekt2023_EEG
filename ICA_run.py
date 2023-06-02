@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import mne
-from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf
+from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot
 from tqdm import tqdm
 import time
 
@@ -43,18 +43,20 @@ for i in range(0, 14):
        U_3d = np.dstack((U_3d, np.transpose(U[:,:reduceDimensions])))
 
 
-
 #print('reduced', (R[:,:,0]@EEGdata[0]).shape)
 
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'R:', R.shape, 'R_3d:', R_3d.shape)
 X_concat = X_pca1.T
 print("X_concat shape: ", X_concat.shape)
 
+componentPlot(R_3d, 10, 14)
+
+'''
 biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
 print(montage.ch_names)
 to_drop_ch = list(set(montage.ch_names)-set(common))
 print(len(to_drop_ch))
-
+'''
 '''
 fig, ax = plt.subplots(4,14, figsize=(10,7))
 #plt.subplots_adjust(hspace=0.5)
