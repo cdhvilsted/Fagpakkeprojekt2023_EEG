@@ -10,7 +10,7 @@ from picard import picard
 from sklearn.decomposition import FastICA
 from tqdm import tqdm
 import time
-from ICA_dataImport import common, montage
+from ICA_dataImport import common, montage, EEGdata, common
 import pandas as pd
 
 ###############################################################################
@@ -72,17 +72,51 @@ def PCA(X,reduced_dim, plot = True):
 
     return U, S, V, reduced_X, rho
 
-def ComponentPlot(data):
+def ComponentPlot(data, numberComponents, numberSubjects):
+    biosemi_montage = mne.channels.make_standard_montage('standard_1020', head_size=0.15)
+    common = biosemi_montage.ch_names
+    to_drop_ch = list(set(biosemi_montage.ch_names) - set(common))
+
+    fig, ax = plt.subplots(14, 10, figsize=(15, 12))
+    axs = ax.ravel()
+    count = 0
+
+    R_3d_list = [np.ndarray.tolist(data[i, :, j]) for j in range(numberSubjects) for i in range(numberComponents)]
+
+    for data in R_3d_list:
+        df = pd.DataFrame([data], columns=common)
+        df[to_drop_ch] = 0
+        df = df * 1e-6
+        df = df.reindex(columns=biosemi_montage.ch_names)
+        info = mne.create_info(ch_names=biosemi_montage.ch_names, sfreq=10, ch_types='eeg')
+        comp1 = mne.EvokedArray(df.to_numpy().T, info)
+        comp1.set_montage(biosemi_montage)
+        comp1 = comp1.drop_channels(to_drop_ch)
+        comp1.plot_topomap(times=[0], axes=axs[count], colorbar=False, show=False)
+        count += 1
+
+    for i in range(numberComponents):
+        axs[i].set_title(' ')
+        axs[i].set_ylabel('Component ' + str(i))
+    for j in range(numberSubjects):
+        axs[j * numberComponents].set_xlabel('Subject ' + str(j))
+        axs[j * numberComponents].xaxis.set_label_position('top')
+
+    plt.show()
+
+
+"""
+def ComponentPlot(data, numberComponents, numberSubjects):
     biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
     to_drop_ch = list(set(montage.ch_names)-set(common))
 
     fig, ax = plt.subplots(14,10, figsize=(15,12))
     axs = ax.ravel()
     count = 0
-    for j in range(14):
-        for i in range(10):
+    for j in range(numberSubjects):
+        for i in range(numberComponents):
             # make back_Y a list
-            data = np.ndarray.tolist(data)
+            data = np.ndarray.tolist(R_3d[i, :, j])
             df = pd.DataFrame([data],columns=common)
             df[to_drop_ch] = 0
             df = df*1e-6
@@ -99,7 +133,7 @@ def ComponentPlot(data):
             print(count)
             count += 1
     plt.show()
-
+"""
 
 import sklearn
 def _g(x):
