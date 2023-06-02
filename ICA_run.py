@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import mne
-from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf
+from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot
 from tqdm import tqdm
 import time
 
@@ -19,6 +19,7 @@ print("-------------------------------------- \033[1m ICA \033[0m --------------
 print("")
 print("# This is the first PCA: #")
 print("")
+
 
 reduceDimensions = 36
 print("Dimensions chosen: ", 18330)
@@ -41,20 +42,25 @@ for i in range(0, 14):
        R_3d = np.dstack((R_3d, np.transpose(V[:,:reduceDimensions])))
        U_3d = np.dstack((U_3d, np.transpose(U[:,:reduceDimensions])))
 
+
 #print('reduced', (R[:,:,0]@EEGdata[0]).shape)
 
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'R:', R.shape, 'R_3d:', R_3d.shape)
 X_concat = X_pca1.T
 print("X_concat shape: ", X_concat.shape)
 
+componentPlot(R_3d, 10, 14)
+
+'''
 biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
 print(montage.ch_names)
 to_drop_ch = list(set(montage.ch_names)-set(common))
 print(len(to_drop_ch))
-
+'''
 '''
 fig, ax = plt.subplots(4,14, figsize=(10,7))
 #plt.subplots_adjust(hspace=0.5)
+print(len(common))
 axs = ax.ravel()
 count = 0
 for j in range(14):
@@ -83,7 +89,7 @@ for j in range(14):
 #print(type(comp1))
 #print(comp1)
 #comp1.plot_topomap(times=[0],sphere='eeglab')
-plt.show()
+plt.show()'''
 
 
 U3 = U_3d[0,:,2]
@@ -93,7 +99,8 @@ U3 = U3.reshape(141,130)
 U3 = np.mean(U3, axis=1)
 plt.gca().invert_yaxis()
 plt.plot(np.arange(-0.1,1,step=1/128),U3)
-plt.show()'''
+plt.show()
+
 
 
 print("")
@@ -107,35 +114,14 @@ print("# This is the second PCA: #")
 print("")
 
 U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = 140, plot=False)
+
 G = V #changed from U to V
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
 X_whithen = reduced_X
 print("X shape: ", X_whithen.shape)
 
-fig, ax = plt.subplots(4,14, figsize=(10,7))
-#plt.subplots_adjust(hspace=0.5)
-axs = ax.ravel()
-count = 0
-for j in range(14):
-    for i in range(4):
-        # make back_Y a list
-        data = np.ndarray.tolist(G[i,:,j])
-        df = pd.DataFrame([data],columns=common)
-        df[to_drop_ch] = 0
-        #df = df*1e-6
-        df = df.reindex(columns=montage.ch_names)
-        info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
-        comp1 = mne.EvokedArray(df.to_numpy().T,info)
-        comp1.set_montage(montage)
-        comp1 = comp1.drop_channels(to_drop_ch)
-        comp1.plot_topomap(times=[0],axes=axs[count],colorbar=False,show=False)
-        #ax[i, j].set_title(' ')
-        #ax[j, 0].set_xlabel('Component ' + str(i))
-        #ax[0, i].set_ylabel('Subject ' + str(j))
-        #ax[j, 0].xaxis.set_label_position('top')
-        print(count)
-        count += 1
-plt.show()
+
+
 
 print("")
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
