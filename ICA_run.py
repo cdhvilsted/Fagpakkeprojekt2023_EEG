@@ -49,7 +49,7 @@ print("X_concat shape: ", X_concat.shape)
 
 # Plotting the components and timeseries
 #componentPlot(R_3d, 4, 14)
-#timeSeriesPlot(U_3d, 0, 2)
+timeSeriesPlot(U_3d, 0, 2)
 
 print("")
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
@@ -104,6 +104,7 @@ print("")
 
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
+'''
 #try to plot ESP from S
 S = S.T
 S0 = S[sorted[-1]]
@@ -111,7 +112,7 @@ S0 = S0.reshape(130,141)
 S0 = np.mean(S0, axis=0)
 plt.plot(np.arange(-0.1,1,step=1/128),S0)
 plt.show()
-
+'''
 
 back_Y = np.zeros((14,140,36))
 

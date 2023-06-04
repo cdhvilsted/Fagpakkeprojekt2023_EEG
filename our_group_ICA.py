@@ -79,8 +79,9 @@ def componentPlot(R, numberComponents, numberSubjects):
     axs = ax.ravel()
     pbar = tqdm(total=numberComponents * numberSubjects)  # Initialize the progress bar
     count = 0
-    for j in range(numberSubjects):
-        for i in range(numberComponents):
+    
+    for i in range(numberComponents):
+        for j in range(numberSubjects):
             data = R[i, :, j].tolist()
             df = pd.DataFrame([data], columns=common)
             df[to_drop_ch] = 0
