@@ -37,10 +37,11 @@ for i in range(0, 14):
         U_3d = np.transpose(U[:,:reduceDimensions])
 
    else:
-       X_pca1 = np.hstack((reduced_X,X_pca1))
-       R = np.vstack((np.transpose(V[:,:reduceDimensions]),R))
+       X_pca1 = np.hstack((reduced_X,X_pca1)) # jeg tror de to dele skal byttes om i rækkefølge
+       R = np.vstack((np.transpose(V[:,:reduceDimensions]),R)) # jeg tror de to dele skal byttes om i rækkefølge
        R_3d = np.dstack((R_3d, np.transpose(V[:,:reduceDimensions])))
        U_3d = np.dstack((U_3d, np.transpose(U[:,:reduceDimensions])))
+
 
 
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'R:', R.shape, 'R_3d:', R_3d.shape)
