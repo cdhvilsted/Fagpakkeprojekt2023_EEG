@@ -1,6 +1,7 @@
 
 import scipy
-from data_load_cec import *
+#from data_load_cec import *
+from ICA_dataImport import common, data_Vs, data_As, data_AVcs, data_AVics, data_AVc, data_A, data_V, data_AVic
 import mne
 import numpy as np
 
@@ -26,16 +27,56 @@ P2_As = []
 P2_ics = []
 P2_cs = []
 
+N1_Ans = []
+N1_icns = []
+N1_cns = []
+
+P2_Ans = []
+P2_icns = []
+P2_cns = []
+
+print(data_A.shape)
+for i in range(14):
+    t_data_A = data_A[i,12,:].reshape(97,141)
+    #t_data_V = data_V[i,12,:].reshape(97,141)
+    t_data_AVc = data_AVc[i,12,:].reshape(97,141)
+    t_data_AVic = data_AVic[i,12,:].reshape(97,141)
+    t_data_As = data_As[i,12,:].reshape(97,141)
+    #t_data_Vs = data_Vs[i,12,:].reshape(97,141)
+    t_data_AVcs = data_AVcs[i,12,:].reshape(97,141)
+    t_data_AVics = data_AVics[i,12,:].reshape(97,141)
+    for j in range(97):
+        #non-speech 
+        N1_Ans.append(np.min(t_data_A[j][N_comp_min:N_comp_max]))
+        #N1_v.append(np.min(t_data_V[j][N_comp_min:N_comp_max]))
+        N1_cns.append(np.min(t_data_AVc[j][N_comp_min:N_comp_max]))
+        N1_icns.append(np.min(t_data_AVic[j][N_comp_min:N_comp_max]))
+        P2_Ans.append(np.max(t_data_A[j][P_comp_min:P_comp_max]))
+        #P2_v.append(np.max(t_data_V[j][P_comp_min:P_comp_max]))
+        P2_cns.append(np.max(t_data_AVc[j][P_comp_min:P_comp_max]))
+        P2_icns.append(np.max(t_data_AVic[j][P_comp_min:P_comp_max]))
+
+        #speech
+        N1_As.append(np.min(t_data_As[j][N_comp_min:N_comp_max]))
+        #N1_vs.append(np.min(t_data_Vs[j][N_comp_min:N_comp_max]))
+        N1_cs.append(np.min(t_data_AVcs[j][N_comp_min:N_comp_max]))
+        N1_ics.append(np.min(t_data_AVics[j][N_comp_min:N_comp_max]))
+        P2_As.append(np.max(t_data_As[j][P_comp_min:P_comp_max]))
+        #P2_vs.append(np.max(t_data_Vs[j][P_comp_min:P_comp_max]))
+        P2_cs.append(np.max(t_data_AVcs[j][P_comp_min:P_comp_max]))
+        P2_ics.append(np.max(t_data_AVics[j][P_comp_min:P_comp_max]))
+
+"""
 for i in range(len(data_As_ind)):
-    N1_As.append(np.min(data_As_ind[i][0][N_comp_min:N_comp_max]))
-    N1_ics.append(np.min(data_AVics_ind[i][0][N_comp_min:N_comp_max]))
-    N1_cs.append(np.min(data_AVcs_ind[i][0][N_comp_min:N_comp_max]))
+    N1_As.append(np.min(data_As_ind[i][12][N_comp_min:N_comp_max]))
+    N1_ics.append(np.min(data_AVics_ind[i][12][N_comp_min:N_comp_max]))
+    N1_cs.append(np.min(data_AVcs_ind[i][12][N_comp_min:N_comp_max]))
     
-    P2_As.append(np.max(data_As_ind[i][0][P_comp_min:P_comp_max]))
-    P2_ics.append(np.max(data_AVics_ind[i][0][P_comp_min:P_comp_max]))
-    P2_cs.append(np.max(data_AVcs_ind[i][0][P_comp_min:P_comp_max]))
+    P2_As.append(np.max(data_As_ind[i][12][P_comp_min:P_comp_max]))
+    P2_ics.append(np.max(data_AVics_ind[i][12][P_comp_min:P_comp_max]))
+    P2_cs.append(np.max(data_AVcs_ind[i][12][P_comp_min:P_comp_max]))
 
-
+"""
 diff_P_A_ic = [abs((P2_As[i] - P2_ics[i])*(10**6)) for i in range(len(N1_As))]
 total_diff_Paic = np.mean(diff_P_A_ic)
 
@@ -51,6 +92,7 @@ print('Difference in A and congruent speech t test: ' + str(test_t))
 test_t2 = scipy.stats.ttest_1samp(diff_P_A_ic, popmean=0) # auditiv + congruent
 print('Difference in A and incongruent speech t test: ' + str(test_t2))
 
+"""
 N1_Ans = []
 N1_icns = []
 N1_cns = []
@@ -72,8 +114,14 @@ for i in range(len(data_Ans_ind)):
 #print(data_As_ind[1][0][N_comp_min:N_comp_max])
 print(len((data_As_ind[0][0])))
 
+"""
 # N1
 # speech
+print('length of N1 and P2 lists:')
+print(len(N1_As), len(N1_ics), len(N1_cs))
+print(len(N1_Ans), len(N1_icns), len(N1_cns))
+print(len(P2_As), len(P2_ics), len(P2_cs))
+print(len(P2_Ans), len(P2_icns), len(P2_cns))
 test_As_in = scipy.stats.ttest_rel(N1_As, N1_ics) # auditiv + incongruent
 test_As_con = scipy.stats.ttest_rel(N1_As, N1_cs) # auditiv + congruent
 print('T-test for A and incongruent AV in speech mode gives (N): ' + str(test_As_in))
