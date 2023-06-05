@@ -5,14 +5,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import mne
-from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot,timeSeriesPlot
+from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot,timeSeriesPlot, timeSeriesPlotICA
 from tqdm import tqdm
 import time
 
 ###############################################################################
 
 # Import data
-from ICA_dataImport import EEGdata, montage, common
+from ICA_dataImport import data_A, montage, common
 
 # First PCA (whitening)
 print("-------------------------------------- \033[1m ICA \033[0m --------------------------------------")
@@ -24,12 +24,12 @@ print("")
 reduceDimensions = 10
 print("Dimensions chosen: ", 18330)
 print("")
-print('EEG', EEGdata[0].shape)
+print('EEG', data_A[0].shape)
 X_pca1 = np.array([])
 R = np.array([])
 print("doing PCA on each subject")
 for i in range(0, 14):
-   U, S, V, reduced_X, rho = PCA(EEGdata[i].T, reduceDimensions, plot=False)
+   U, S, V, reduced_X, rho = PCA(data_A[i].T, reduceDimensions, plot=False)
    if len(X_pca1) == 0:
         X_pca1 = reduced_X
         R = np.transpose(V[:,:reduceDimensions])
@@ -37,8 +37,8 @@ for i in range(0, 14):
         U_3d = np.transpose(U[:,:reduceDimensions])
 
    else:
-       X_pca1 = np.hstack((reduced_X,X_pca1)) # jeg tror de to dele skal byttes om i rækkefølge
-       R = np.vstack((np.transpose(V[:,:reduceDimensions]),R)) # jeg tror de to dele skal byttes om i rækkefølge
+       X_pca1 = np.hstack((X_pca1, reduced_X)) 
+       R = np.vstack((R, np.transpose(V[:,:reduceDimensions])))
        R_3d = np.dstack((R_3d, np.transpose(V[:,:reduceDimensions])))
        U_3d = np.dstack((U_3d, np.transpose(U[:,:reduceDimensions])))
 
@@ -49,8 +49,8 @@ X_concat = X_pca1.T
 print("X_concat shape: ", X_concat.shape)
 
 # Plotting the components and timeseries
-#componentPlot(R_3d, 4, 14)
-timeSeriesPlot(U_3d, 0, 2)
+componentPlot(R_3d, 4, 14)
+#timeSeriesPlot(U_3d, 2, 1)
 
 print("")
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
@@ -105,15 +105,10 @@ print("")
 
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
-'''
+
 #try to plot ESP from S
 S = S.T
-S0 = S[sorted[-1]]
-S0 = S0.reshape(130,141)
-S0 = np.mean(S0, axis=0)
-plt.plot(np.arange(-0.1,1,step=1/128),S0)
-plt.show()
-'''
+#timeSeriesPlotICA(S, sorted[-1])
 
 back_Y = np.zeros((14,140,36))
 

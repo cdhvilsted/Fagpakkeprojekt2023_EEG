@@ -10,7 +10,7 @@ from picard import picard
 from sklearn.decomposition import FastICA
 from tqdm import tqdm
 import time
-from ICA_dataImport import common, montage, EEGdata, common
+from ICA_dataImport import common, montage
 import pandas as pd
 
 ###############################################################################
@@ -75,11 +75,13 @@ def PCA(X,reduced_dim, plot = True):
 def componentPlot(R, numberComponents, numberSubjects):
     biosemi_montage = mne.channels.make_standard_montage('standard_1020')
     to_drop_ch = list(set(montage.ch_names) - set(common))
-    fig, ax = plt.subplots(numberComponents, numberSubjects, figsize=(15, 5))
+    fig, ax = plt.subplots(numberComponents, numberSubjects, figsize=(20, 7))
     axs = ax.ravel()
     pbar = tqdm(total=numberComponents * numberSubjects)  # Initialize the progress bar
     count = 0
-    
+    minR = round(np.min(R),3)
+    maxR = round(np.max(R),3)
+
     for i in range(numberComponents):
         for j in range(numberSubjects):
             data = R[i, :, j].tolist()
@@ -91,24 +93,34 @@ def componentPlot(R, numberComponents, numberSubjects):
             comp1 = mne.EvokedArray(df.to_numpy().T, info)
             comp1.set_montage(montage)
             comp1 = comp1.drop_channels(to_drop_ch)
-            comp1.plot_topomap(times=[0], axes=axs[count], colorbar=False, show=False, sphere=0.12)
+            im = comp1.plot_topomap(times=[0], axes=axs[count], colorbar=False, show=False, sphere=0.12)
             pbar.update(1)  # Update the progress bar
             ax[i, j].set_title(' ')
             ax[0, j].set_xlabel('Subject ' + str(j))
             ax[i, 0].set_ylabel('Component ' + str(i))
             ax[0, j].xaxis.set_label_position('top')
             count += 1
+    cbar = plt.colorbar(plt.cm.ScalarMappable(cmap='RdBu_r'), ax=axs.ravel().tolist(),fraction=0.047*7/20)
+    cbar.set_ticks([0, 0.5, 1])
+    cbar.set_ticklabels([minR, 0, maxR])
     plt.show()
 
 
 def timeSeriesPlot(U_3d, component, subject):
     U3 = U_3d[component, :, subject]
-    U3 = U3.reshape(141, 130)
-    U3 = np.mean(U3, axis=1)
+    U3 = U3.reshape(97, 141)
+    U3 = np.mean(U3, axis=0)
     plt.gca().invert_yaxis()
     plt.plot(np.arange(-0.1, 1, step=1 / 128), U3)
     plt.show()
 
+def timeSeriesPlotICA(U_3d, component):
+    U3 = U_3d[component, :]
+    U3 = U3.reshape(97, 141)
+    U3 = np.mean(U3, axis=0)
+    plt.gca().invert_yaxis()
+    plt.plot(np.arange(-0.1, 1, step=1 / 128), U3)
+    plt.show()
 
 
 '''

@@ -1,7 +1,7 @@
 import numpy as np
 import mne
 import os as os
-from ICA_dataImport import EEGdata, montage, common
+from ICA_dataImport import data_As, common
 import matplotlib.pyplot as plt
 
 """
@@ -27,18 +27,18 @@ print(e)
 print(np.transpose(e))
 
 """
-EEGdata1 = EEGdata[0]
-print(EEGdata1.shape)
+
+
+
 print(common.index('Cz'))
 
-data = np.empty((141,130))
-print(EEGdata[0,12,:].shape)
-for i in range(14):
-    data = np.hstack((data,EEGdata[i,12,:].reshape(141,130)))
+data = np.mean(data_As[0,12,:].reshape(97,141),axis=0)
+for i in range(1,14):
+    data = np.vstack((data,np.mean(data_As[i,12,:].reshape(97,141),axis=0)))
 print(data.shape)
-print(np.mean(data,axis=1).shape)
-data = np.mean(data,axis=1)
-
+print(np.mean(data,axis=0).shape)
+data = np.mean(data,axis=0)
+print(min(data),max(data))
 x = np.arange(-0.1,1,step=1/128)
 fig, (ax1,ax2) = plt.subplots(1,2)
 #ax1.axvline(x=0.1,color='r')
