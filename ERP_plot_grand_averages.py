@@ -4,30 +4,6 @@ import os as os
 from ICA_dataImport import common, data_As, data_Vs, data_As, data_AVcs, data_AVics, data_AVc, data_A, data_V, data_AVic
 import matplotlib.pyplot as plt
 
-"""
-g1 = np.empty((140,10))
-R1 = np.empty((10,36))
-
-print(np.dot(g1,R1).shape)
-print(np.linalg.pinv(R1).shape)
-print(np.dot(np.linalg.pinv(R1),np.transpose(g1)).shape)
-"""
-"""
-# hstack two matrices
-a = np.array([[1, 2, 3], [4, 5, 6]])
-b = np.array([[7, 8, 9], [10, 11, 12]])
-c = np.vstack((a, b))
-d = np.vstack((b, a))
-e = np.array([[1,2],[3,4],[5,6]])
-print(c)
-print(np.transpose(c))
-print(d)
-print(np.transpose(a))
-print(e)
-print(np.transpose(e))
-
-"""
-
 #plot data for speech files
 pdata_As = np.mean(data_As[0,12,:].reshape(97,141),axis=0)
 pdata_Vs = np.mean(data_Vs[0,12,:].reshape(97,141),axis=0)
