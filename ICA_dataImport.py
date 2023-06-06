@@ -1,9 +1,11 @@
+# for updating the files of the matrix
+
 import mne
 import numpy as np
 import random
 import os
 from tqdm import tqdm
-
+from numpy import savetxt
 
 randomSeed = random.seed(1)
 
@@ -172,65 +174,115 @@ for file in Non_speech_files:
     counter2 += 1
 
 pbar2.close()  # Close the progress bar
+
+saves = ["data_A", "data_V", "data_AVc", "data_AVic", "data_As", "data_Vs", "data_AVcs", "data_AVics"]
+
+for save in saves:
+    reshaped_data = globals()[save].reshape(globals()[save].shape[0], -1)
+    filename = save + ".txt"
+    savetxt(filename, reshaped_data, delimiter=',')
+
+    loaded_data_2d = np.loadtxt(filename, delimiter=',')
+    loaded_data_3d = loaded_data_2d.reshape(
+        loaded_data_2d.shape[0], loaded_data_2d.shape[1] // globals()[save].shape[2], globals()[save].shape[2])
+    globals()["load_3d_" + save] = loaded_data_3d
+
+
+
+
+
+
 """
-print(data_Vs.shape)
-print(data_As.shape)
-print(data_AVcs.shape)
-print(data_AVics.shape)
-print(data_V.shape)
-print(data_A.shape)
-print(data_AVc.shape)
-print(data_AVic.shape)
-"""
+saves = ["data_A","data_V","data_AVc","data_AVic","data_As","data_Vs","data_AVcs","data_AVics"]
+
+data_A_reshaped = data_A.reshape(data_A.shape[0], -1)
+# save data_A as a .txt
+savetxt("data_A.txt", data_A_reshaped, delimiter=',')
+
+# retrieving data from file.
+loaded_2d_data_A = np.loadtxt("data_A.txt",delimiter=',')
+
+load_3d_data_A = loaded_2d_data_A.reshape(
+    loaded_2d_data_A.shape[0], loaded_2d_data_A.shape[1] // data_A.shape[2], data_A.shape[2])
 
 
 
+data_V_reshaped = data_V.reshape(data_V.shape[0], -1)
+# save data_V as a .txt
+savetxt("data_V.txt", data_V_reshaped, delimiter=',')
+
+# retrieving data from file.
+loaded_2d_data_V = np.loadtxt("data_V.txt",delimiter=',')
+
+load_3d_data_V = loaded_2d_data_V.reshape(
+    loaded_2d_data_V.shape[0], loaded_2d_data_V.shape[1] // data_V.shape[2], data_V.shape[2])
+
+
+data_AVc_reshaped = data_AVc.reshape(data_AVc.shape[0], -1)
+# save data_V as a .txt
+savetxt("data_AVc.txt", data_AVc_reshaped, delimiter=',')
+
+# retrieving data from file.
+loaded_2d_data_AVc = np.loadtxt("data_AVc.txt",delimiter=',')
+
+load_3d_data_AVc = loaded_2d_data_AVc.reshape(
+    loaded_2d_data_AVc.shape[0], loaded_2d_data_AVc.shape[1] // data_AVc.shape[2], data_AVc.shape[2])
 
 
 
+data_AVic_reshaped = data_AVic.reshape(data_AVic.shape[0], -1)
+# save data_Vic as a .txt
+savetxt("data_AVic.txt", data_AVic_reshaped, delimiter=',')
+
+# retrieving data from file.
+loaded_2d_data_AVic = np.loadtxt("data_AVic.txt",delimiter=',')
+
+load_3d_data_AVic = loaded_2d_data_AVic.reshape(
+    loaded_2d_data_AVic.shape[0], loaded_2d_data_AVic.shape[1] // data_AVic.shape[2], data_AVic.shape[2])
 
 
-#old method
-"""
-# Importing data
-aud1person = None
-file = Speech_files[0]
-path = directory +"/"+ str(file)
-path = path.replace(" ","")
-raw = mne.io.read_epochs_eeglab(path, montage_units='dm',verbose=False)
-montage = raw.get_montage()
-raw.pick_channels(common,verbose='WARNING')
-raw = raw.crop(tmin=-0.1)
-event1 = raw[Aud_event[0]] # tagi
-event2 = raw[Aud_event[1]] # tabi
-aud1person = mne.concatenate_epochs([event1, event2],verbose=False)
-aud1person=aud1person.drop([i for i in range(130,len(aud1person))],verbose=False)
-aud1person = aud1person.get_data()
-aud1person = np.swapaxes(aud1person, 1,2).reshape(36,-1)
+data_As_reshaped = data_As.reshape(data_As.shape[0], -1)
+# save data_A as a .txt
+savetxt("data_As.txt", data_As_reshaped, delimiter=',')
+
+# retrieving data from file.
+loaded_2d_data_As = np.loadtxt("data_As.txt",delimiter=',')
+
+load_3d_data_As = loaded_2d_data_As.reshape(
+    loaded_2d_data_As.shape[0], loaded_2d_data_As.shape[1] // data_As.shape[2], data_As.shape[2])
 
 
-EEGdata = np.array(aud1person)
-print("Dimensions of the data for 1 person:")
-print(("channels, epoch*timesteps"), np.shape(EEGdata))
-for i in range(1,len(Speech_files)):
-    file = Speech_files[i]
-    path = directory + '/' + str(file)
-    path = path.replace(" ","")
-    raw = mne.io.read_epochs_eeglab(path, montage_units='dm',verbose=False)
-    raw.pick_channels(common,verbose=False)
-    raw = raw.crop(tmin=-0.1)
-    event1 = raw[Aud_event[0]] # tagi
-    event2 = raw[Aud_event[1]] # tabi
-    aud1person = mne.concatenate_epochs([event1, event2],verbose=False)
-    aud1person=aud1person.drop([i for i in range(130,len(aud1person))],verbose=False)
-    aud1person = aud1person.get_data()
-    aud1person = np.swapaxes(aud1person, 1,2).reshape(36,-1)
-    EEGdata = np.dstack((EEGdata,aud1person)) #hstack giver (trials, personer*antal kanaler, timesteps)
+
+data_Vs_reshaped = data_Vs.reshape(data_Vs.shape[0], -1)
+# save data_Vs as a .txt
+savetxt("data_Vs.txt", data_Vs_reshaped, delimiter=',')
+
+# retrieving data from file.
+loaded_2d_data_Vs = np.loadtxt("data_Vs.txt",delimiter=',')
+
+load_3d_data_Vs = loaded_2d_data_Vs.reshape(
+    loaded_2d_data_Vs.shape[0], loaded_2d_data_Vs.shape[1] // data_Vs.shape[2], data_Vs.shape[2])
 
 
-EEGdata = np.swapaxes(EEGdata,0,1)
-EEGdata = np.swapaxes(EEGdata, 0,2)
+data_AVcs_reshaped = data_AVcs.reshape(data_AVcs.shape[0], -1)
+# save data_Vcs as a .txt
+savetxt("data_AVcs.txt", data_AVcs_reshaped, delimiter=',')
 
-print("")
-print("Dimesions for data for all persons", np.shape(EEGdata))
+# retrieving data from file.
+loaded_2d_data_AVcs = np.loadtxt("data_AVcs.txt",delimiter=',')
+
+load_3d_data_AVcs = loaded_2d_data_AVcs.reshape(
+    loaded_2d_data_AVcs.shape[0], loaded_2d_data_AVcs.shape[1] // data_AVcs.shape[2], data_AVcs.shape[2])
+
+
+
+data_AVics_reshaped = data_AVics.reshape(data_AVics.shape[0], -1)
+# save data_Vics as a .txt
+savetxt("data_AVics.txt", data_AVics_reshaped, delimiter=',')
+
+# retrieving data from file.
+loaded_2d_data_AVics = np.loadtxt("data_AVics.txt",delimiter=',')
+
+load_3d_data_AVics = loaded_2d_data_AVics.reshape(
+    loaded_2d_data_AVics.shape[0], loaded_2d_data_AVics.shape[1] // data_AVics.shape[2], data_AVics.shape[2])
 """
