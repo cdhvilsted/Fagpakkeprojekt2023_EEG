@@ -19,7 +19,7 @@ import pandas as pd
 
 
 def plotCumulativeExplainedVariances(rho, threshold = 0.95):
-    threshold = 0.9
+    rho = np.diagonal(rho)
     plt.figure()
     plt.plot(range(1, len(rho) + 1), rho, 'x-')
     plt.plot(range(1, len(rho) + 1), np.cumsum(rho), 'o-')
@@ -42,9 +42,11 @@ def SVD(X):
     V = Vt.T  # transpose Vt to obtain V
     S = np.diag(S)
     
-    if (U @ S @ Vt != X).all():
+    if (U @ S @ Vt != X).any():
+        print(np.mean(abs(U @ S @ Vt - X)))
         print('Warning: U S Vt != X')
-    
+    if (U @ S @ Vt == X).all():
+        print('super duper')
     return U, S, V
 
 def PCA(X,reduced_dim, plot = True):

@@ -21,27 +21,35 @@ print("# This is the first PCA: #")
 print("")
 
 
-reduceDimensions = 10
+reduceDimensions = 36
 print("Dimensions chosen: ", 18330)
 print("")
 print('EEG', data_A[0].shape)
 X_pca1 = np.array([])
 R = np.array([])
+numcomponents = []
+
 print("doing PCA on each subject")
 for i in range(0, 14):
    U, S, V, reduced_X, rho = PCA(data_A[i].T, reduceDimensions, plot=False)
+   rho2 = np.diagonal(rho)
+   rho2 = np.cumsum(rho2)
    if len(X_pca1) == 0:
         X_pca1 = reduced_X
         R = np.transpose(V[:,:reduceDimensions])
         R_3d = np.transpose(V[:,:reduceDimensions])
         U_3d = np.transpose(U[:,:reduceDimensions])
-
+        numcomponents.append(np.where(rho2 > 0.95)[0][0])
+        #print("Number of components for round ", i,':', numcomponents[i])
    else:
        X_pca1 = np.hstack((X_pca1, reduced_X)) 
        R = np.vstack((R, np.transpose(V[:,:reduceDimensions])))
        R_3d = np.dstack((R_3d, np.transpose(V[:,:reduceDimensions])))
        U_3d = np.dstack((U_3d, np.transpose(U[:,:reduceDimensions])))
+       numcomponents.append(np.where(rho2 > 0.95)[0][0])
+       #print("Number of components for round ", i,':', numcomponents[i])
 
+print("Number of components to keep 0.95 of data after PCA1: ", max(numcomponents))
 
 
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'R:', R.shape, 'R_3d:', R_3d.shape)
@@ -62,13 +70,23 @@ print("")
 print("# This is the second PCA: #")
 print("")
 
-reduced_dim2 = 140
+reduced_dim2 = 36*14
 U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = reduced_dim2, plot=False)
+rho2 = np.diagonal(rho)
+rho2 = np.cumsum(rho2)
+numcomponents = np.where(rho2 > 0.95)[0][0]
+print("Number of components to keep 0.95 of data after PCA2: ", numcomponents)   
+
 
 G = V #changed from U to V
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
 X_whithen = reduced_X
 print("X shape: ", X_whithen.shape)
+
+if (U @ S @ np.transpose(G) != X_concat.T).any():
+    print("X*G != X_concat")
+if (U @ S @ np.transpose(G) == X_concat.T).all():
+    print('Hurra!')
 
 # Backprojecting PCA2 components into PCA1 space
 Gt = np.transpose(G)
@@ -84,7 +102,7 @@ for i in range(14):
        comp_3d = np.dstack((comp_3d, comp))
 
 print('comp3d: ', comp_3d.shape)
-#componentPlot(comp_3d, 4, 14)
+componentPlot(comp_3d, 4, 14)
 
 
 print("")
