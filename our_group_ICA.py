@@ -5,6 +5,7 @@
 import numpy as np
 import mne
 import matplotlib.pyplot as plt
+from matplotlib.colors import TwoSlopeNorm
 from picard import picard
 #import fast ICA
 from sklearn.decomposition import FastICA
@@ -82,8 +83,13 @@ def componentPlot(R, numberComponents, numberSubjects):
     pbar = tqdm(total=numberComponents * numberSubjects)  # Initialize the progress bar
     count = 0
     minR = round(np.min(R),3)
+    print('-------------------')
+    print(np.min(R))
+    print(np.max(R))
+    print('-------------------')
     maxR = round(np.max(R),3)
-
+    maxvalue = np.max([abs(minR), abs(maxR)])
+    #cnorm = TwoSlopeNorm(vmin=-maxvalue, vcenter=0, vmax=maxvalue)
     for i in range(numberComponents):
         for j in range(numberSubjects):
             data = R[i, :, j].tolist()
@@ -104,7 +110,7 @@ def componentPlot(R, numberComponents, numberSubjects):
             count += 1
     cbar = plt.colorbar(plt.cm.ScalarMappable(cmap='RdBu_r'), ax=axs.ravel().tolist(),fraction=0.047*7/20)
     cbar.set_ticks([0, 0.5, 1])
-    cbar.set_ticklabels([minR, 0, maxR])
+    cbar.set_ticklabels([-maxvalue, 0, maxvalue])
     plt.show()
 
 

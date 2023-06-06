@@ -21,7 +21,7 @@ print("# This is the first PCA: #")
 print("")
 
 
-reduceDimensions = 36
+reduceDimensions = 10
 print("Dimensions chosen: ", 18330)
 print("")
 print('EEG', data_A[0].shape)
@@ -57,7 +57,7 @@ X_concat = X_pca1.T
 print("X_concat shape: ", X_concat.shape)
 
 # Plotting the components and timeseries
-componentPlot(R_3d, 4, 14)
+componentPlot(R_3d, 2, 14)
 #timeSeriesPlot(U_3d, 2, 1)
 
 print("")
@@ -70,7 +70,7 @@ print("")
 print("# This is the second PCA: #")
 print("")
 
-reduced_dim2 = 36*14
+reduced_dim2 = 140
 U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = reduced_dim2, plot=False)
 rho2 = np.diagonal(rho)
 rho2 = np.cumsum(rho2)
@@ -94,7 +94,7 @@ for i in range(14):
     Gt1 = Gt[:,reduceDimensions*i:reduceDimensions*(i+1)]
     Rt = R_3d[:,:,i] # Basisskiftematrix ?
     comp = np.dot(Gt1, Rt) # Inverse matrix ????
-    
+
     if i == 0:
         comp_3d = comp
 
@@ -102,7 +102,7 @@ for i in range(14):
        comp_3d = np.dstack((comp_3d, comp))
 
 print('comp3d: ', comp_3d.shape)
-componentPlot(comp_3d, 4, 14)
+componentPlot(comp_3d, 7, 14)
 
 
 print("")
