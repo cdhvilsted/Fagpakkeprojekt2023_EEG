@@ -5,14 +5,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import mne
-from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot,timeSeriesPlot, timeSeriesPlotICA
+from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot,timeSeriesPlot, timeSeriesPlotICA, loadData, common, montage
 from tqdm import tqdm
 import time
 
 ###############################################################################
 
-# Import data
-from ICA_dataImport import data_A, montage, common
+# Import data from files made in ICA_dataImport.py
+data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics = loadData()
+
 
 # First PCA (whitening)
 print("-------------------------------------- \033[1m ICA \033[0m --------------------------------------")
@@ -57,7 +58,7 @@ X_concat = X_pca1.T
 print("X_concat shape: ", X_concat.shape)
 
 # Plotting the components and timeseries
-componentPlot(R_3d, 2, 14)
+componentPlot(R_3d, 4, 14)
 #timeSeriesPlot(U_3d, 2, 1)
 
 print("")
@@ -83,10 +84,7 @@ print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ",
 X_whithen = reduced_X
 print("X shape: ", X_whithen.shape)
 
-if (U @ S @ np.transpose(G) != X_concat.T).any():
-    print("X*G != X_concat")
-if (U @ S @ np.transpose(G) == X_concat.T).all():
-    print('Hurra!')
+
 
 # Backprojecting PCA2 components into PCA1 space
 Gt = np.transpose(G)
@@ -129,27 +127,3 @@ S = S.T
 #timeSeriesPlotICA(S, sorted[-1])
 
 back_Y = np.zeros((14,140,36))
-
-print(np.transpose(R_3d[:,:,0]).shape, 'should be 36,10')
-#print(np.transpose(G[:,10*(0):10*(0+1)]).shape, 'should be 10, 140')
-print(G[10*(0):10*(0+1),:].shape, 'should be 10, 140')
-
-print(np.linalg.pinv(W).shape, 'should be 140, 140')
-print((np.transpose(R_3d[:,:,0]) @ np.transpose(G[:,10*(0):10*(0+1)]) @ np.linalg.pinv(W)).shape)
-for i in range(14):
-    back_Y[i,:,:] = np.transpose(np.transpose(R_3d[:,:,i]) @ G[10*(0):10*(0+1),:] @ np.linalg.pinv(W))
-
-'''
-for i in range(14):
-    for j in range(10):
-        #back_Y[i, j, :] = np.matmul(A @ S[:, i].reshape((-1, 1)), np.ones((1, 36)))
-        back_Y[i, j, :] = np.transpose(R_3d[:,:,j]) @ np.transpose(G[:,10*(i):10*(i+1)]) @ np.linalg.pinv(W)
-'''
-print(np.shape(back_Y))
-
-# data for hver forsøgsperson kommer af at gange mixing matrix med source for hver forsøgsperson fx X0 = A[0,0,:] @ S[0,:]
-
-# sorter efter varians i hver component
-#print(A[0,0,:])
-#var_S = np.var(S, axis=1)
-#print(np.argsort(var_S)) # sort index from smallest to highest variance

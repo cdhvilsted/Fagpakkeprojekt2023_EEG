@@ -181,12 +181,7 @@ for save in saves:
     reshaped_data = globals()[save].reshape(globals()[save].shape[0], -1)
     filename = save + ".txt"
     savetxt(filename, reshaped_data, delimiter=',')
-
-    loaded_data_2d = np.loadtxt(filename, delimiter=',')
-    loaded_data_3d = loaded_data_2d.reshape(
-        loaded_data_2d.shape[0], loaded_data_2d.shape[1] // globals()[save].shape[2], globals()[save].shape[2])
-    globals()["load_3d_" + save] = loaded_data_3d
-
+    print("Saved " + filename)
 
 
 

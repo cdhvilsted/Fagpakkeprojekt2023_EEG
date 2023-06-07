@@ -2,6 +2,8 @@
 ###############################################################################
 
 # packages
+import os
+
 import numpy as np
 import mne
 import matplotlib.pyplot as plt
@@ -11,11 +13,85 @@ from picard import picard
 from sklearn.decomposition import FastICA
 from tqdm import tqdm
 import time
-from ICA_dataImport import common, montage
+#from ICA_dataImport import common, montage
 import pandas as pd
 
 ###############################################################################
 
+
+# Set directory
+directory = os.path.dirname(os.path.abspath(__file__))+"/EEGproj-main/EEGproj-main/data_preproc"
+
+print("Working directory:  ", directory[:30],"/.../",directory[-57:], " ") # just printing the path to the data
+
+
+# Test subjets
+
+Speech = ["PP03","PP09", "PP10", "PP11", "PP12", "PP13", "PP14", "PP15",
+          "PP16", "PP17", "PP20", "PP25", "PP26", "PP28"]
+
+Non_speech = ["PP02", "PP04", "PP05", "PP06", "PP07", "PP08", "PP18", "PP19",
+              "PP21", "PP22", "PP23", "PP24", "PP27", "PP29"]
+
+# Adding filename to "_4adj.set"
+Speech_files = [ i + "_4adj.set" for i in Speech]
+Non_speech_files = [i + "_4adj.set" for i in Non_speech]
+
+# Common channels
+common = ['AF4', 'AFz', 'C1', 'C2', 'C3', 'C4', 'CP1', 'CP2', 'CP3', 'CP4',
+       'CP5', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'FC1', 'FC2', 'FCz',
+       'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P7', 'PO3',
+       'PO4', 'PO7', 'PO8', 'POz', 'Pz']
+
+
+Aud_event = ["Tagi_A", "Tabi_A"] #only auditive
+
+Vis_event = ["Tagi_V","Tabi_V"] #only visual
+
+AV_c_event = ["Tagi_A_Tagi_V","Tabi_A_Tabi_V"] #congruent audivisual
+
+AV_ic_event = ["Tagi_A_Tabi_V","Tabi_A_Tagi_V"] # incongruent audivisual
+
+numofepochs = 97 #number of epochs per condition
+timestep = 141 #number of timepoints per epech
+
+#loading one person to get the montage
+aud1person = None
+file = Speech_files[0]
+path = directory +"/"+ str(file)
+path = path.replace(" ","")
+raw = mne.io.read_epochs_eeglab(path, montage_units='dm',verbose=False)
+montage = raw.get_montage()
+print(" montage: ",montage)
+
+
+
+
+def loadData():
+    saves = ["data_A", "data_V", "data_AVc", "data_AVic", "data_As", "data_Vs", "data_AVcs", "data_AVics"]
+    total_files = len(saves)
+    loaded_files = []
+
+    with tqdm(total=total_files, desc="Loading data", unit="file", ncols=80) as pbar:
+        for save in saves:
+            filename = save + ".txt"
+            loaded_data_2d = np.loadtxt(filename, delimiter=',')
+            loaded_data_3d = loaded_data_2d.reshape(
+                loaded_data_2d.shape[0], loaded_data_2d.shape[1] // 13677, 13677)
+            globals()["load_3d_" + save] = loaded_data_3d
+
+            # Add the loaded file to the list and update the loading bar
+            loaded_files.append(filename)
+            pbar.set_postfix(current_file=filename)
+            pbar.update(1)
+
+    print("All files loaded successfully!")
+
+    # Return all data
+    return (
+        load_3d_data_A, load_3d_data_V, load_3d_data_AVc, load_3d_data_AVic,
+        load_3d_data_As, load_3d_data_Vs, load_3d_data_AVcs, load_3d_data_AVics
+    )
 
 
 
@@ -42,12 +118,13 @@ def SVD(X):
     U, S, Vt = np.linalg.svd(X, full_matrices=False)
     V = Vt.T  # transpose Vt to obtain V
     S = np.diag(S)
-    
-    if (U @ S @ Vt != X).any():
-        print(np.mean(abs(U @ S @ Vt - X)))
-        print('Warning: U S Vt != X')
-    if (U @ S @ Vt == X).all():
-        print('super duper')
+
+    if np.mean(abs(U @ S @ Vt - X)) < 0.0000000000000002:
+        print('SVD works correctly')
+        print ("error = ",np.mean(abs(U @ S @ Vt - X)))
+    else:
+        print('SVD does not work, error seems large')
+        print ("error = ",np.mean(abs(U @ S @ Vt - X)))
     return U, S, V
 
 def PCA(X,reduced_dim, plot = True):
@@ -83,10 +160,10 @@ def componentPlot(R, numberComponents, numberSubjects):
     pbar = tqdm(total=numberComponents * numberSubjects)  # Initialize the progress bar
     count = 0
     minR = round(np.min(R),3)
-    print('-------------------')
-    print(np.min(R))
-    print(np.max(R))
-    print('-------------------')
+    #print('-------------------')
+    #print(np.min(R))
+    #print(np.max(R))
+    #print('-------------------')
     maxR = round(np.max(R),3)
     maxvalue = np.max([abs(minR), abs(maxR)])
     #cnorm = TwoSlopeNorm(vmin=-maxvalue, vcenter=0, vmax=maxvalue)
