@@ -22,7 +22,7 @@ print("# This is the first PCA: #")
 print("")
 
 
-reduceDimensions = 10
+reduceDimensions = 12
 print("Dimensions chosen: ", 18330)
 print("")
 print('EEG', data_A[0].shape)
@@ -58,7 +58,7 @@ X_concat = X_pca1.T
 print("X_concat shape: ", X_concat.shape)
 
 # Plotting the components and timeseries
-componentPlot(R_3d, 4, 14)
+#componentPlot(R_3d, 4, 14)
 #timeSeriesPlot(U_3d, 2, 1)
 
 print("")
@@ -71,7 +71,7 @@ print("")
 print("# This is the second PCA: #")
 print("")
 
-reduced_dim2 = 140
+reduced_dim2 = 49
 U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = reduced_dim2, plot=False)
 rho2 = np.diagonal(rho)
 rho2 = np.cumsum(rho2)
@@ -90,6 +90,8 @@ print("X shape: ", X_whithen.shape)
 Gt = np.transpose(G)
 for i in range(14):
     Gt1 = Gt[:,reduceDimensions*i:reduceDimensions*(i+1)]
+    #if i == 0:
+    #    print('G: ', Gt1.shape)
     Rt = R_3d[:,:,i] # Basisskiftematrix ?
     comp = np.dot(Gt1, Rt) # Inverse matrix ????
 
@@ -100,7 +102,7 @@ for i in range(14):
        comp_3d = np.dstack((comp_3d, comp))
 
 print('comp3d: ', comp_3d.shape)
-componentPlot(comp_3d, 7, 14)
+#componentPlot(comp_3d, 7, 14)
 
 
 print("")
@@ -112,18 +114,39 @@ print("")
 print("# This is the ICA step: #")
 print("")
 
-S, A, W, sorted = ICA(X_whithen, R, G, "fastICA") #X needs shape (n_samples, n_features)
-
+#G_ICA = V[:,:reduced_dim2]
+reduced_dim3 = 46
+S, A, W, sorted = ICA(X_whithen, R, G, "fastICA", reduced_dim3) #X needs shape (n_samples, n_features)
 
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
+
+# Backprojecting ICA components into PCA1 space (first to PCA2 space)
+'''
+projectionPC2 = np.dot(X, np.linalg.pinv(W))
+projectionPC1 = np.dot(projectionPC2, np.transpose(G)) # G is orthogonal
+projection = np.dot(projectionPC1, R) # R is orthogonal'''
+
+W_inv = np.linalg.pinv(W[sorted]) # A
+
+Gt = np.transpose(G)
+for i in range(14):
+    Gt1 = Gt[:reduced_dim2,reduceDimensions*i:reduceDimensions*(i+1)]
+    Rt = R_3d[:,:,i] # Basisskiftematrix ?
+    
+    compPC2 = np.dot(W_inv, Gt1)
+    compPC1 = np.dot(compPC2, Rt)
+
+    if i == 0:
+        W_comp_3d = compPC1
+
+    else:
+       W_comp_3d = np.dstack((W_comp_3d, compPC1))
+
+print('W_comp_3d: ', W_comp_3d.shape)
+#componentPlot(W_comp_3d, 7, 14)
+print(sorted)
+timeSeriesPlotICA(S, sorted[0])
 
 print("")
 
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
-
-
-#try to plot ESP from S
-S = S.T
-#timeSeriesPlotICA(S, sorted[-1])
-
-back_Y = np.zeros((14,140,36))

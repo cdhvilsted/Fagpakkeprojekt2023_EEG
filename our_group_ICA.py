@@ -119,12 +119,16 @@ def SVD(X):
     V = Vt.T  # transpose Vt to obtain V
     S = np.diag(S)
 
+    '''
+    # checking if error is small enough to ignore
     if np.mean(abs(U @ S @ Vt - X)) < 0.0000000000000002:
         print('SVD works correctly')
         print ("error = ",np.mean(abs(U @ S @ Vt - X)))
     else:
         print('SVD does not work, error seems large')
         print ("error = ",np.mean(abs(U @ S @ Vt - X)))
+    '''
+    
     return U, S, V
 
 def PCA(X,reduced_dim, plot = True):
@@ -200,7 +204,7 @@ def timeSeriesPlot(U_3d, component, subject):
     plt.show()
 
 def timeSeriesPlotICA(U_3d, component):
-    U3 = U_3d[component, :]
+    U3 = U_3d[:, component]
     U3 = U3.reshape(97, 141)
     U3 = np.mean(U3, axis=0)
     plt.gca().invert_yaxis()
@@ -245,7 +249,7 @@ def _g(x):
 def _gprime(x):
     return 1 - np.tanh(x)**2
 
-def ICA(X, R, G, typeICA):
+def ICA(X, R, G, typeICA, reduced_dim):
     # this function takes a matrix and returns the ICA of the matrix
     if typeICA == "fastICA":
         # fastICA
@@ -256,16 +260,12 @@ def ICA(X, R, G, typeICA):
         A = transform_ICA.mixing_
 
         W = np.linalg.pinv(A)
-
-        #pvaf
-        print(pvaf(X,W,140))
-
-        explained = np.var(S, axis = 0)
-        explained_ratio = explained / np.sum(explained)
-        sorted = np.argsort(explained_ratio)
-        print(np.max(explained))
-        print(sum(explained))
-        print(sorted)
+        W_com = transform_ICA.components_
+    
+        # pvaf
+        #print(pvaf(X,W_com, G, R, reduction_dim=reduced_dim))
+        sorted = pvaf_source(S)
+        
 
     elif typeICA == "picard":
         # use picard
@@ -291,11 +291,24 @@ def ICA(X, R, G, typeICA):
     return S, A, W, sorted
 
 # Percentage variance accounted for
-def pvaf(X, W, reduction_dim):
+def pvaf(X, W, G, R, reduction_dim):
     # Reconstructing data set
-    projection = np.dot(W, np.transpose(X))
-    #print('projection:', np.shape(projection))
+    projection = np.dot(X, np.linalg.pinv(W))
     pvaf = []
     for i in range(reduction_dim):
-        pvaf.append(100-100*np.mean(np.var(np.transpose(X)-projection[i,:]))/np.mean(np.var(X)))
+        pvaf.append(100-100*np.mean(np.var(X-projection[i,:], axis=0))/np.mean(np.var(X, axis=0)))
+    
     print("pvaf: ", pvaf, 'pvaf_sum', np.sum(pvaf))
+
+
+def pvaf_source(S):
+    print('S:', S.shape)
+    explained = np.var(S, axis = 0)
+    explained_ratio = explained / np.sum(explained)
+    sorted = np.argsort(explained_ratio)[::-1]
+    
+    rho = np.cumsum(explained_ratio)
+    numcomponents = np.where(rho > 0.95)[0][0]
+    print("Number of components to keep 0.95 of data after ICA: ", numcomponents)
+    
+    return sorted
