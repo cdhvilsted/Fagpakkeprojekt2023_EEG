@@ -8,6 +8,7 @@ import numpy as np
 import mne
 import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
+import matplotlib as mpl
 from picard import picard
 #import fast ICA
 from sklearn.decomposition import FastICA
@@ -156,7 +157,7 @@ def PCA(X,reduced_dim, plot = True):
 
     return U, S, V, reduced_X, rho
 
-def componentPlot(R, numberComponents, numberSubjects):
+def componentPlot(R, numberComponents, numberSubjects, plotTitle):
     biosemi_montage = mne.channels.make_standard_montage('standard_1020')
     to_drop_ch = list(set(montage.ch_names) - set(common))
     fig, ax = plt.subplots(numberComponents, numberSubjects, figsize=(20, 7))
@@ -181,34 +182,40 @@ def componentPlot(R, numberComponents, numberSubjects):
             info = mne.create_info(ch_names=montage.ch_names, sfreq=10, ch_types='eeg')
             comp1 = mne.EvokedArray(df.to_numpy().T, info)
             comp1.set_montage(montage)
+            #norm = mpl.colors.Normalize(vmin=-1, vmax=1)
             comp1 = comp1.drop_channels(to_drop_ch)
-            im = comp1.plot_topomap(times=[0], axes=axs[count], colorbar=False, show=False, sphere=0.12)
+            im = comp1.plot_topomap(times=[0], axes=axs[count], colorbar=False, cmap='RdBu_r', show=False, sphere=0.12, vlim=(-maxvalue*1e6,maxvalue*1e6))
+            st = fig.suptitle(plotTitle, fontsize="x-large")
             pbar.update(1)  # Update the progress bar
             ax[i, j].set_title(' ')
             ax[0, j].set_xlabel('Subject ' + str(j))
             ax[i, 0].set_ylabel('Component ' + str(i))
             ax[0, j].xaxis.set_label_position('top')
             count += 1
+    
+    
     cbar = plt.colorbar(plt.cm.ScalarMappable(cmap='RdBu_r'), ax=axs.ravel().tolist(),fraction=0.047*7/20)
     cbar.set_ticks([0, 0.5, 1])
     cbar.set_ticklabels([-maxvalue, 0, maxvalue])
     plt.show()
 
 
-def timeSeriesPlot(U_3d, component, subject):
+def timeSeriesPlot(U_3d, component, subject, plotTitle):
     U3 = U_3d[component, :, subject]
     U3 = U3.reshape(97, 141)
     U3 = np.mean(U3, axis=0)
     plt.gca().invert_yaxis()
     plt.plot(np.arange(-0.1, 1, step=1 / 128), U3)
+    plt.title(plotTitle)
     plt.show()
 
-def timeSeriesPlotICA(U_3d, component):
+def timeSeriesPlotICA(U_3d, component, plotTitle):
     U3 = U_3d[:, component]
     U3 = U3.reshape(97, 141)
     U3 = np.mean(U3, axis=0)
     plt.gca().invert_yaxis()
     plt.plot(np.arange(-0.1, 1, step=1 / 128), U3)
+    plt.title(plotTitle)
     plt.show()
 
 
@@ -253,7 +260,7 @@ def ICA(X, R, G, typeICA, reduced_dim):
     # this function takes a matrix and returns the ICA of the matrix
     if typeICA == "fastICA":
         # fastICA
-        transform_ICA = sklearn.decomposition.FastICA(n_components = None,  whiten=False, fun='logcosh', max_iter=200, tol=0.0001)
+        transform_ICA = sklearn.decomposition.FastICA(n_components = None,  whiten=False, fun='logcosh', max_iter=200, tol=0.0001, random_state=2) #added random state to make it reproducible
 
         # fit the model
         S = transform_ICA.fit_transform(X)

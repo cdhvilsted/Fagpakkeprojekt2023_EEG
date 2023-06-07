@@ -14,6 +14,7 @@ import time
 # Import data from files made in ICA_dataImport.py
 data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics = loadData()
 
+plotTitle = 'data_AVc' #change according to which data is used
 
 # First PCA (whitening)
 print("-------------------------------------- \033[1m ICA \033[0m --------------------------------------")
@@ -22,44 +23,45 @@ print("# This is the first PCA: #")
 print("")
 
 
-reduceDimensions = 12
+reduceDimensionsPCA1 = 12 # chosen from running script with and finding number of components that explain 0.95 of the variance
 print("Dimensions chosen: ", 18330)
 print("")
-print('EEG', data_A[0].shape)
-X_pca1 = np.array([])
-R = np.array([])
-numcomponents = []
+print('EEG', data_AVc[0].shape)
+X_PCA1 = np.array([]) #create empty array to store all reduced data in
+Rt = np.array([]) #create empty array to store all Rt in
+numcomponents_PCA1 = [] #create empty array to store number of components for each subject
 
 print("doing PCA on each subject")
-for i in range(0, 14):
-   U, S, V, reduced_X, rho = PCA(data_A[i].T, reduceDimensions, plot=False)
-   rho2 = np.diagonal(rho)
-   rho2 = np.cumsum(rho2)
-   if len(X_pca1) == 0:
-        X_pca1 = reduced_X
-        R = np.transpose(V[:,:reduceDimensions])
-        R_3d = np.transpose(V[:,:reduceDimensions])
-        U_3d = np.transpose(U[:,:reduceDimensions])
-        numcomponents.append(np.where(rho2 > 0.95)[0][0])
+for i in range(0, 14): #looping over all 14 subjects
+   U, S, V, reduced_X, rho = PCA(data_AVc[i].T, reduceDimensionsPCA1, plot=False)
+   #calculate cumulative sum of explained variance to find number of components needed to explain 95% of variance
+   rho_diag = np.diagonal(rho)
+   rho_cumsum = np.cumsum(rho_diag) 
+
+   #appending data to corresponding arrays
+   if len(X_PCA1) == 0: #for the first subject we create the arrays
+        X_PCA1 = reduced_X
+        Rt = np.transpose(V[:,:reduceDimensionsPCA1]) #2d array of all Rt's
+        Rt_3d = np.transpose(V[:,:reduceDimensionsPCA1]) #3d array of all Rt's with 3rd dimension being subject
+        Ut_3d = np.transpose(U[:,:reduceDimensionsPCA1]) #3d array of all Ut's with 3rd dimension being subject
+        numcomponents_PCA1.append(np.where(rho_cumsum > 0.95)[0][0])
         #print("Number of components for round ", i,':', numcomponents[i])
    else:
-       X_pca1 = np.hstack((X_pca1, reduced_X)) 
-       R = np.vstack((R, np.transpose(V[:,:reduceDimensions])))
-       R_3d = np.dstack((R_3d, np.transpose(V[:,:reduceDimensions])))
-       U_3d = np.dstack((U_3d, np.transpose(U[:,:reduceDimensions])))
-       numcomponents.append(np.where(rho2 > 0.95)[0][0])
+       X_PCA1 = np.hstack((X_PCA1, reduced_X)) 
+       Rt = np.vstack((Rt, np.transpose(V[:,:reduceDimensionsPCA1]))) 
+       Rt_3d = np.dstack((Rt_3d, np.transpose(V[:,:reduceDimensionsPCA1])))
+       Ut_3d = np.dstack((Ut_3d, np.transpose(U[:,:reduceDimensionsPCA1])))
+       numcomponents_PCA1.append(np.where(rho_cumsum > 0.95)[0][0])
        #print("Number of components for round ", i,':', numcomponents[i])
 
-print("Number of components to keep 0.95 of data after PCA1: ", max(numcomponents))
+print("Number of components to keep 0.95 of data after PCA1: ", max(numcomponents_PCA1))
+print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'Rt:', Rt.shape, 'Rt_3d:', Rt_3d.shape)
 
-
-print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'R:', R.shape, 'R_3d:', R_3d.shape)
-X_concat = X_pca1.T
-print("X_concat shape: ", X_concat.shape)
+print("Xt_PCA1 shape: ", (X_PCA1.T).shape) # shape = (componentsPCA1*subjects, epochs*timesteps)
 
 # Plotting the components and timeseries
-#componentPlot(R_3d, 4, 14)
-#timeSeriesPlot(U_3d, 2, 1)
+componentPlot(Rt_3d, 4, 14, plotTitle)
+timeSeriesPlot(Ut_3d, 2, 1, plotTitle)
 
 print("")
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
@@ -71,38 +73,40 @@ print("")
 print("# This is the second PCA: #")
 print("")
 
-reduced_dim2 = 49
-U, S, V, reduced_X, rho = PCA(X_concat.T, reduced_dim = reduced_dim2, plot=False)
-rho2 = np.diagonal(rho)
-rho2 = np.cumsum(rho2)
-numcomponents = np.where(rho2 > 0.95)[0][0]
-print("Number of components to keep 0.95 of data after PCA2: ", numcomponents)   
+reduceDimensionsPCA2 = 49 # chosen from running script with and finding number of components that explain 0.95 of the variance
+U, S, V, reduced_X, rho = PCA(X_PCA1, reduced_dim = reduceDimensionsPCA2, plot=False) 
+#calculate cumulative sum of explained variance to find number of components needed to explain 95% of variance
+rho_diag = np.diagonal(rho)
+rho_cumsum = np.cumsum(rho_diag)
+numcomponents_PCA2 = np.where(rho_cumsum > 0.95)[0][0]
+print("Number of components to keep 0.95 of data after PCA2: ", numcomponents_PCA2)   
 
 
-G = V #changed from U to V
+G = V # G is equal to V from PCA2
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape)
-X_whithen = reduced_X
-print("X shape: ", X_whithen.shape)
-
+X_PCA2_whithen = reduced_X #changed name to whithen, as naming convention from ICA calls pca reduced data whithened
+print("X_PCA2_whithen shape: ", X_PCA2_whithen.shape)
 
 
 # Backprojecting PCA2 components into PCA1 space
 Gt = np.transpose(G)
 for i in range(14):
-    Gt1 = Gt[:,reduceDimensions*i:reduceDimensions*(i+1)]
+    Gt_ind = Gt[:,reduceDimensionsPCA1*i:reduceDimensionsPCA1*(i+1)] # selecting the Gt for each subject
     #if i == 0:
     #    print('G: ', Gt1.shape)
-    Rt = R_3d[:,:,i] # Basisskiftematrix ?
-    comp = np.dot(Gt1, Rt) # Inverse matrix ????
+    Rt_ind = Rt_3d[:,:,i] # using Rt from PCA1 (the transposed is the inverse as it is orthogonal)
+    PCA2_comp = np.dot(Gt_ind, Rt_ind) # backprojecting PCA2 components into PCA1 space
 
+    # stacking the components into a 3d array
     if i == 0:
-        comp_3d = comp
+        PCA2_comp_3d = PCA2_comp
 
     else:
-       comp_3d = np.dstack((comp_3d, comp))
+       PCA2_comp_3d = np.dstack((PCA2_comp_3d, PCA2_comp))
 
-print('comp3d: ', comp_3d.shape)
-#componentPlot(comp_3d, 7, 14)
+print('PCA2_comp_3d: ', PCA2_comp_3d.shape)
+# Plotting the components
+componentPlot(PCA2_comp_3d, 7, 14, plotTitle)
 
 
 print("")
@@ -114,38 +118,36 @@ print("")
 print("# This is the ICA step: #")
 print("")
 
-#G_ICA = V[:,:reduced_dim2]
-reduced_dim3 = 46
-S, A, W, sorted = ICA(X_whithen, R, G, "fastICA", reduced_dim3) #X needs shape (n_samples, n_features)
+# should the reduceDimensionsICA be used? is not used in the function
+reduceDimensionsICA = 46
+S, A, W, sorted = ICA(X_PCA2_whithen, Rt, G, "fastICA", reduced_dim=reduceDimensionsICA) #X needs shape (n_samples, n_features)
 
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
 
 # Backprojecting ICA components into PCA1 space (first to PCA2 space)
-'''
-projectionPC2 = np.dot(X, np.linalg.pinv(W))
-projectionPC1 = np.dot(projectionPC2, np.transpose(G)) # G is orthogonal
-projection = np.dot(projectionPC1, R) # R is orthogonal'''
-
 W_inv = np.linalg.pinv(W[sorted]) # A
 
-Gt = np.transpose(G)
+# Backprojecting ICA components into PCA1 space (first to PCA2 space)
 for i in range(14):
-    Gt1 = Gt[:reduced_dim2,reduceDimensions*i:reduceDimensions*(i+1)]
-    Rt = R_3d[:,:,i] # Basisskiftematrix ?
+    Gt_ind = Gt[:reduceDimensionsPCA2,reduceDimensionsPCA1*i:reduceDimensionsPCA1*(i+1)]
+    Rt_ind = Rt_3d[:,:,i] # Basisskiftematrix ?
     
-    compPC2 = np.dot(W_inv, Gt1)
-    compPC1 = np.dot(compPC2, Rt)
+    # backprojecting ICA components into PCA2 space
+    compPC2 = np.dot(W_inv, Gt_ind)
+    # from PCA2 space to PCA1 space
+    compPC1 = np.dot(compPC2, Rt_ind)
 
+    # stacking the components into a 3d array
     if i == 0:
-        W_comp_3d = compPC1
-
+        ICA_comp_3d = compPC1
     else:
-       W_comp_3d = np.dstack((W_comp_3d, compPC1))
+       ICA_comp_3d = np.dstack((ICA_comp_3d, compPC1))
 
-print('W_comp_3d: ', W_comp_3d.shape)
-#componentPlot(W_comp_3d, 7, 14)
-print(sorted)
-timeSeriesPlotICA(S, sorted[0])
+print('ICA_comp_3d: ', ICA_comp_3d.shape)
+
+# Plotting the components
+componentPlot(ICA_comp_3d, 7, 14, plotTitle)
+timeSeriesPlotICA(S, sorted[0], plotTitle)
 
 print("")
 
