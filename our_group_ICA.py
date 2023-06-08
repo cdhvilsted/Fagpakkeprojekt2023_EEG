@@ -317,5 +317,10 @@ def pvaf_source(S):
     rho = np.cumsum(explained_ratio)
     numcomponents = np.where(rho > 0.95)[0][0]
     print("Number of components to keep 0.95 of data after ICA: ", numcomponents)
-    
+    # plotting explained variance in different ways
+    #plt.bar(explained_ratio, height=1, width=0.2, edgecolor='black')
+    #plt.hist(explained_ratio, bins=, edgecolor='black')
+    #plt.plot(np.arange(0,49),explained_ratio[sorted], 'o', color='black')
+    #plt.show()
+    #print(max(explained_ratio), np.mean(explained_ratio), min(explained_ratio))
     return sorted

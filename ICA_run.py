@@ -14,7 +14,7 @@ import time
 # Import data from files made in ICA_dataImport.py
 data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics = loadData()
 
-plotTitle = 'data_AVc' #change according to which data is used
+plotTitle = 'data_A' #change according to which data is used
 
 # First PCA (whitening)
 print("-------------------------------------- \033[1m ICA \033[0m --------------------------------------")
@@ -26,7 +26,7 @@ print("")
 reduceDimensionsPCA1 = 12 # chosen from running script with and finding number of components that explain 0.95 of the variance
 print("Dimensions chosen: ", 18330)
 print("")
-print('EEG', data_AVc[0].shape)
+print('EEG', data_A[0].shape)
 X_PCA1 = np.array([]) #create empty array to store all reduced data in
 Rt = np.array([]) #create empty array to store all Rt in
 numcomponents_PCA1 = [] #create empty array to store number of components for each subject
@@ -60,8 +60,8 @@ print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ",
 print("Xt_PCA1 shape: ", (X_PCA1.T).shape) # shape = (componentsPCA1*subjects, epochs*timesteps)
 
 # Plotting the components and timeseries
-componentPlot(Rt_3d, 4, 14, plotTitle)
-timeSeriesPlot(Ut_3d, 2, 1, plotTitle)
+#componentPlot(Rt_3d, 4, 14, plotTitle)
+#timeSeriesPlot(Ut_3d, 2, 1, plotTitle)
 
 print("")
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
@@ -106,7 +106,7 @@ for i in range(14):
 
 print('PCA2_comp_3d: ', PCA2_comp_3d.shape)
 # Plotting the components
-componentPlot(PCA2_comp_3d, 7, 14, plotTitle)
+#componentPlot(PCA2_comp_3d, 7, 14, plotTitle)
 
 
 print("")
@@ -146,8 +146,8 @@ for i in range(14):
 print('ICA_comp_3d: ', ICA_comp_3d.shape)
 
 # Plotting the components
-componentPlot(ICA_comp_3d, 7, 14, plotTitle)
-timeSeriesPlotICA(S, sorted[0], plotTitle)
+#componentPlot(ICA_comp_3d, 7, 14, plotTitle)
+#timeSeriesPlotICA(S, sorted[0], plotTitle)
 
 print("")
 
