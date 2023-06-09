@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import mne
-from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot,timeSeriesPlot, timeSeriesPlotICA, loadData, common, montage
+from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot,timeSeriesPlot, timeSeriesPlotICA, loadData, common, montage, componentTimeseriesPlot
 from tqdm import tqdm
 import time
 
@@ -62,7 +62,6 @@ print("Xt_PCA1 shape: ", (X_PCA1.T).shape) # shape = (componentsPCA1*subjects, e
 # Plotting the components and timeseries
 #componentPlot(Rt_3d, 4, 14, plotTitle)
 #timeSeriesPlot(Ut_3d, 2, 1, plotTitle)
-
 print("")
 print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
 print("")
@@ -106,7 +105,9 @@ for i in range(14):
 
 print('PCA2_comp_3d: ', PCA2_comp_3d.shape)
 # Plotting the components
-#componentPlot(PCA2_comp_3d, 7, 14, plotTitle)
+#componentPlot(PCA2_comp_3d, 4, 14, plotTitle)
+sorted = list(range(168))
+componentTimeseriesPlot(PCA2_comp_3d, U, 7, 14, plotTitle, sorted)
 
 
 print("")
@@ -125,7 +126,9 @@ S, A, W, sorted = ICA(X_PCA2_whithen, Rt, G, "fastICA", reduced_dim=reduceDimens
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
 
 # Backprojecting ICA components into PCA1 space (first to PCA2 space)
-W_inv = np.linalg.pinv(W[sorted]) # A
+#W_inv = np.linalg.pinv(W[sorted]) # A
+W_inv = np.linalg.pinv(W) # A
+W_inv = W_inv # Asorted
 
 # Backprojecting ICA components into PCA1 space (first to PCA2 space)
 for i in range(14):
@@ -146,7 +149,8 @@ for i in range(14):
 print('ICA_comp_3d: ', ICA_comp_3d.shape)
 
 # Plotting the components
-#componentPlot(ICA_comp_3d, 7, 14, plotTitle)
+componentTimeseriesPlot(ICA_comp_3d, S, 7, 14, plotTitle, sorted)
+#componentPlot(ICA_comp_3d, 7, 14, plotTitle, sorted)
 #timeSeriesPlotICA(S, sorted[0], plotTitle)
 
 print("")

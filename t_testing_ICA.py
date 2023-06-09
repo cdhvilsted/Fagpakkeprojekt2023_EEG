@@ -15,7 +15,7 @@ import time
 data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics = loadData()
 data_liste = [data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics]
 data_titles = ['data_A', 'data_V', 'data_AVc', 'data_AVic', 'data_As', 'data_Vs', 'data_AVcs', 'data_AVics']
-S_all_data = np.empty((13677, 49, 8))
+ICA_data_timeseries = np.empty((13677, 14, 8))
 sorted_all_data = np.empty((49, 8))
 
 
@@ -132,7 +132,7 @@ for k in range(len(data_titles)):
     print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
 
     # Backprojecting ICA components into PCA1 space (first to PCA2 space)
-    W_inv = np.linalg.pinv(W[sorted]) # A
+    W_inv = np.linalg.pinv(W) # A
 
     # Backprojecting ICA components into PCA1 space (first to PCA2 space)
     for i in range(14):
@@ -155,8 +155,11 @@ for k in range(len(data_titles)):
     # Plotting the components
     #componentPlot(ICA_comp_3d, 7, 14, plotTitle)
     #timeSeriesPlotICA(S, sorted[0], plotTitle)
-    S_all_data[:,:,k] = S
-    sorted_all_data[:,k] = sorted
+    for i in range(14):
+        ICA_comp_3d_ind = ICA_comp_3d[:,:,i]
+        ICA_data_timeseries[:,i,k] = np.dot(ICA_comp_3d_ind[sorted[0],:], data_liste[k][i])
+    
+    
     print("")
 
     print(" - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
@@ -166,7 +169,7 @@ print('done')
 #t-testing begins
 
 
-'''
+
 times = np.arange(-0.1,1,step=1/128)
 N_comp_min = (np.where(times <= 0.05))[-1][-1] # 50 ms
 
@@ -178,35 +181,57 @@ P_comp_min = (np.where(times <= 0.15))[-1][-1] # 150 ms
 P_comp_max = (np.where(times >= 0.25))[0][0] # 250 ms
 #print('P indexes: ' + str(P_comp_min) + ',' + str(P_comp_max))
 
-# taking average over epochs
-t_data_A = np.mean(S_all_data[:,sorted[0,0],0].reshape(97,141), axis = 0) # 97 epochs, 141 timesteps
-t_data_V = np.mean(S_all_data[:,sorted[0,1],1].reshape(97,141), axis = 0)
-t_data_AVc = np.mean(S_all_data[:,sorted[0,2],2].reshape(97,141), axis = 0)
-t_data_AVic = np.mean(S_all_data[:,sorted[0,3],3].reshape(97,141), axis = 0)
-t_data_As = np.mean(S_all_data[:,sorted[0,4],4].reshape(97,141), axis = 0)
-t_data_Vs = np.mean(S_all_data[:,sorted[0,5],5].reshape(97,141), axis = 0)
-t_data_AVcs = np.mean(S_all_data[:,sorted[0,6],6].reshape(97,141), axis = 0)
-t_data_AVics = np.mean(S_all_data[:,sorted[0,7],7].reshape(97,141), axis = 0)
-    
-#non-speech 
-N1_Ans = np.min(t_data_A[N_comp_min:N_comp_max])
-N1_Vns = np.min(t_data_V[N_comp_min:N_comp_max])
-N1_cns = np.min(t_data_AVc[N_comp_min:N_comp_max])
-N1_icns = np.min(t_data_AVic[N_comp_min:N_comp_max])
-P2_Ans = np.max(t_data_A[P_comp_min:P_comp_max])
-P2_Vns = np.max(t_data_V[P_comp_min:P_comp_max])
-P2_cns = np.max(t_data_AVc[P_comp_min:P_comp_max])
-P2_icns = np.max(t_data_AVic[P_comp_min:P_comp_max])
+# amplitude samples for same stimuli
+N1_As = []
+N1_ics = []
+N1_cs = []
+N1_Vs = []
 
-#speech
-N1_As = np.min(t_data_As[N_comp_min:N_comp_max])
-N1_Vs = np.min(t_data_Vs[N_comp_min:N_comp_max])
-N1_cs = np.min(t_data_AVcs[N_comp_min:N_comp_max])
-N1_ics = np.min(t_data_AVics[N_comp_min:N_comp_max])
-P2_As = np.max(t_data_As[P_comp_min:P_comp_max])
-P2_Vs = np.max(t_data_Vs[P_comp_min:P_comp_max])
-P2_cs = np.max(t_data_AVcs[P_comp_min:P_comp_max])
-P2_ics = np.max(t_data_AVics[P_comp_min:P_comp_max])
+P2_As = []
+P2_ics = []
+P2_cs = []
+P2_Vs = []
+
+N1_Ans = []
+N1_icns = []
+N1_cns = []
+N1_Vns = []
+
+P2_Ans = []
+P2_icns = []
+P2_cns = []
+P2_Vns = []
+
+for i in range(14):
+    # taking average over epochs
+    t_data_A = np.mean(ICA_data_timeseries[i,12,:].reshape(97,141), axis = 0) # 97 epochs, 141 timesteps
+    t_data_V = np.mean(data_V[i,12,:].reshape(97,141), axis = 0)
+    t_data_AVc = np.mean(data_AVc[i,12,:].reshape(97,141), axis = 0)
+    t_data_AVic = np.mean(data_AVic[i,12,:].reshape(97,141), axis = 0)
+    t_data_As = np.mean(data_As[i,12,:].reshape(97,141), axis = 0)
+    t_data_Vs = np.mean(data_Vs[i,12,:].reshape(97,141), axis = 0)
+    t_data_AVcs = np.mean(data_AVcs[i,12,:].reshape(97,141), axis = 0)
+    t_data_AVics = np.mean(data_AVics[i,12,:].reshape(97,141), axis = 0)
+    
+    #non-speech 
+    N1_Ans.append(np.min(t_data_A[N_comp_min:N_comp_max]))
+    N1_Vns.append(np.min(t_data_V[N_comp_min:N_comp_max]))
+    N1_cns.append(np.min(t_data_AVc[N_comp_min:N_comp_max]))
+    N1_icns.append(np.min(t_data_AVic[N_comp_min:N_comp_max]))
+    P2_Ans.append(np.max(t_data_A[P_comp_min:P_comp_max]))
+    P2_Vns.append(np.max(t_data_V[P_comp_min:P_comp_max]))
+    P2_cns.append(np.max(t_data_AVc[P_comp_min:P_comp_max]))
+    P2_icns.append(np.max(t_data_AVic[P_comp_min:P_comp_max]))
+
+    #speech
+    N1_As.append(np.min(t_data_As[N_comp_min:N_comp_max]))
+    N1_Vs.append(np.min(t_data_Vs[N_comp_min:N_comp_max]))
+    N1_cs.append(np.min(t_data_AVcs[N_comp_min:N_comp_max]))
+    N1_ics.append(np.min(t_data_AVics[N_comp_min:N_comp_max]))
+    P2_As.append(np.max(t_data_As[P_comp_min:P_comp_max]))
+    P2_Vs.append(np.max(t_data_Vs[P_comp_min:P_comp_max]))
+    P2_cs.append(np.max(t_data_AVcs[P_comp_min:P_comp_max]))
+    P2_ics.append(np.max(t_data_AVics[P_comp_min:P_comp_max]))
 
 
 
@@ -252,4 +277,3 @@ print('T-test for A and congruent AV in non-speech mode gives (N): ', test_Ans_c
 print('------------------ P2 -------------------')
 print('T-test for A and incongruent AV in non-speech mode gives (P): ', Ans_in.pvalue)
 print('T-test for A and congruent AV in non-speech mode gives (P): ', Ans_con.pvalue)
-'''
