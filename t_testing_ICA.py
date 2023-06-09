@@ -8,6 +8,8 @@ import mne
 from our_group_ICA import PCA, plotCumulativeExplainedVariances, ICA, pvaf, componentPlot,timeSeriesPlot, timeSeriesPlotICA, loadData, common, montage
 from tqdm import tqdm
 import time
+import scipy
+
 
 ###############################################################################
 
@@ -204,14 +206,14 @@ P2_Vns = []
 
 for i in range(14):
     # taking average over epochs
-    t_data_A = np.mean(ICA_data_timeseries[i,12,:].reshape(97,141), axis = 0) # 97 epochs, 141 timesteps
-    t_data_V = np.mean(data_V[i,12,:].reshape(97,141), axis = 0)
-    t_data_AVc = np.mean(data_AVc[i,12,:].reshape(97,141), axis = 0)
-    t_data_AVic = np.mean(data_AVic[i,12,:].reshape(97,141), axis = 0)
-    t_data_As = np.mean(data_As[i,12,:].reshape(97,141), axis = 0)
-    t_data_Vs = np.mean(data_Vs[i,12,:].reshape(97,141), axis = 0)
-    t_data_AVcs = np.mean(data_AVcs[i,12,:].reshape(97,141), axis = 0)
-    t_data_AVics = np.mean(data_AVics[i,12,:].reshape(97,141), axis = 0)
+    t_data_A = np.mean(ICA_data_timeseries[:,i,0].reshape(97,141), axis = 0) # 97 epochs, 141 timesteps
+    t_data_V = np.mean(ICA_data_timeseries[:,i,1].reshape(97,141), axis = 0)
+    t_data_AVc = np.mean(ICA_data_timeseries[:,i,2].reshape(97,141), axis = 0)
+    t_data_AVic = np.mean(ICA_data_timeseries[:,i,3].reshape(97,141), axis = 0)
+    t_data_As = np.mean(ICA_data_timeseries[:,i,4].reshape(97,141), axis = 0)
+    t_data_Vs = np.mean(ICA_data_timeseries[:,i,5].reshape(97,141), axis = 0)
+    t_data_AVcs = np.mean(ICA_data_timeseries[:,i,6].reshape(97,141), axis = 0)
+    t_data_AVics = np.mean(ICA_data_timeseries[:,i,7].reshape(97,141), axis = 0)
     
     #non-speech 
     N1_Ans.append(np.min(t_data_A[N_comp_min:N_comp_max]))
