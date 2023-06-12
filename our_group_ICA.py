@@ -207,13 +207,8 @@ def componentTimeseriesPlotIndividual(R, S, numberComponents, numberSubjects, pl
     pbar = tqdm(total=numberComponents * numberSubjects)  # Initialize the progress bar
     count = 0
     minR = round(np.min(R),3)
-    #print('-------------------')
-    #print(np.min(R))
-    #print(np.max(R))
-    #print('-------------------')
     maxR = round(np.max(R),3)
     maxvalue = np.max([abs(minR), abs(maxR)])
-    #cnorm = TwoSlopeNorm(vmin=-maxvalue, vcenter=0, vmax=maxvalue)
     for i in range(numberComponents):
         for j in range(numberSubjects+1):
             if j == numberSubjects:
@@ -321,36 +316,6 @@ def timeSeriesPlotICA(U_3d, component, plotTitle):
     plt.show()
 
 
-'''
-def ComponentPlot(R_3d, numberComponents, numberSubjects):
-    biosemi_montage = mne.channels.make_standard_montage('standard_1020',head_size=0.15)
-    to_drop_ch = list(set(montage.ch_names)-set(common))
-
-    fig, ax = plt.subplots(14,10, figsize=(15,12))
-    axs = ax.ravel()
-    count = 0
-    for j in range(numberSubjects):
-        for i in range(numberComponents):
-            # make back_Y a list
-            data = np.ndarray.tolist(R_3d[i, :, j])
-            df = pd.DataFrame([data],columns=common)
-            df[to_drop_ch] = 0
-            df = df*1e-6
-            df = df.reindex(columns=montage.ch_names)
-            info = mne.create_info(ch_names=montage.ch_names,sfreq=10,ch_types='eeg')
-            comp1 = mne.EvokedArray(df.to_numpy().T,info)
-            comp1.set_montage(montage)
-            comp1 = comp1.drop_channels(to_drop_ch)
-            comp1.plot_topomap(times=[0],axes=axs[count],colorbar=False,show=False)
-            ax[j, i].set_title(' ')
-            ax[0, i].set_ylabel('Component ' + str(i))
-            ax[j, 0].set_xlabel('Subject ' + str(j))
-            ax[j, 0].xaxis.set_label_position('top')
-            print(count)
-            count += 1
-    plt.show()
-'''
-
 import sklearn
 def _g(x):
     return np.tanh(x)
@@ -358,7 +323,7 @@ def _g(x):
 def _gprime(x):
     return 1 - np.tanh(x)**2
 
-def ICA(X, R, G, typeICA, reduced_dim):
+def ICA(X, typeICA, reduced_dim):
     # this function takes a matrix and returns the ICA of the matrix
     if typeICA == "fastICA":
         # fastICA

@@ -124,7 +124,7 @@ print("")
 
 # should the reduceDimensionsICA be used? is not used in the function
 reduceDimensionsICA = 46
-S, A, W, sorted = ICA(X_PCA2_whithen, Rt, G, "fastICA", reduced_dim=reduceDimensionsICA) #X needs shape (n_samples, n_features)
+S, A, W, sorted = ICA(X_PCA2_whithen, "fastICA", reduced_dim=reduceDimensionsICA) #X needs shape (n_samples, n_features)
 
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
 
