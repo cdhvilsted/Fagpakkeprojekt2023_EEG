@@ -402,7 +402,7 @@ def ICA(X, R, G, typeICA, reduced_dim):
 # Percentage variance accounted for
 def pvaf(X, W, G, R, reduction_dim):
     # Reconstructing data set
-    projection = np.dot(X, np.linalg.pinv(W))
+    projection = np.dot(S, np.linalg.pinv(W)) # S instead of data
     pvaf = []
     for i in range(reduction_dim):
         pvaf.append(100-100*np.mean(np.var(X-projection[i,:], axis=0))/np.mean(np.var(X, axis=0)))

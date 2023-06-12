@@ -24,7 +24,7 @@ print("")
 
 
 reduceDimensionsPCA1 = 12 # chosen from running script with and finding number of components that explain 0.95 of the variance
-numberSubjects = 1 # number of subjects to run ICA on
+numberSubjects = 3 # number of subjects to run ICA on
 print("Dimensions chosen: ", 18330)
 print("")
 print('EEG', data_A[0].shape)
@@ -134,6 +134,7 @@ W_inv = np.linalg.pinv(W) # A
 
 # Backprojecting ICA components into PCA1 space (first to PCA2 space)
 
+"""
 #individual ICA
 for i in range(numberSubjects):
     Gt_ind = Gt[:reduceDimensionsPCA2,reduceDimensionsPCA1*i:reduceDimensionsPCA1*(i+1)]
@@ -150,15 +151,15 @@ for i in range(numberSubjects):
     else:
        ICA_comp_3d = np.dstack((ICA_comp_3d, compPC1))
 
-
-#group ICA
 """
+#group ICA
+
 for i in range(numberSubjects):
     Gt_ind = Gt[:reduceDimensionsPCA2,reduceDimensionsPCA1*i:reduceDimensionsPCA1*(i+1)]
     Rt_ind = Rt_3d[:,:,i] # Basisskiftematrix ?
     
     # backprojecting ICA components into PCA2 space
-    compPC2 = np.dot(W_inv, Gt_ind)
+    compPC2 = np.dot(W, Gt_ind)
     # from PCA2 space to PCA1 space
     compPC1 = np.dot(compPC2, Rt_ind)
 
@@ -169,13 +170,13 @@ for i in range(numberSubjects):
        ICA_comp_3d = np.dstack((ICA_comp_3d, compPC1))
 
 print('ICA_comp_3d: ', ICA_comp_3d.shape)
-"""
+
 
 # Plotting the components
 #componentTimeseriesPlot(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
-componentTimeseriesPlotIndividual(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
+#componentTimeseriesPlotIndividual(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
 
-#componentPlot(ICA_comp_3d, 7, 14, plotTitle, sorted)
+componentPlot(ICA_comp_3d, 7, 3, plotTitle, sorted)
 #timeSeriesPlotICA(S, sorted[0], plotTitle)
 
 print("")
