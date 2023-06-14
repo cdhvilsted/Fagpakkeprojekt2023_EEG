@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 
-print((np.empty((13677,36))@np.empty((36,36))).shape)
+print((np.empty((13677,168))@np.empty((168,1))).shape)
 """
 a = np.array([[[1e-5,1e-8,1],[2,4,2e-9]],[[2e-5,3e-8,4],[2,3,2e-10]]])
 #print(np.min(a))

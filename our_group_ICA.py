@@ -332,13 +332,13 @@ def ICA(X, typeICA, reduced_dim):
         # fit the model
         S = transform_ICA.fit_transform(X)
         A = transform_ICA.mixing_
-
         W = np.linalg.pinv(A)
         W_com = transform_ICA.components_
-    
+        assert np.allclose(X, np.dot(S, A.T))
         # pvaf
-        #print(pvaf(X,W_com, G, R, reduction_dim=reduced_dim))
-        sorted = pvaf_source(S)
+        sorted = pvaf(X, A, S, reduced_dim)
+        print(sorted)
+        # sorted = pvaf_source(S)
         
 
     elif typeICA == "picard":
@@ -365,14 +365,24 @@ def ICA(X, typeICA, reduced_dim):
     return S, A, W, sorted
 
 # Percentage variance accounted for
-def pvaf(X, W, G, R, reduction_dim):
+def pvaf(X, A, S, reduction_dim):
     # Reconstructing data set
-    projection = np.dot(S, np.linalg.pinv(W)) # S instead of data
+    projection = np.dot(S, np.transpose(A)) # S instead of data
     pvaf = []
-    for i in range(reduction_dim):
-        pvaf.append(100-100*np.mean(np.var(X-projection[i,:], axis=0))/np.mean(np.var(X, axis=0)))
-    
+    print(projection.shape)
+    for i in range(12*14):
+        projection = np.dot(S[:,i].reshape(13677,1),A[:,i].reshape(1,12*14))
+        #proj2 = np.tile(projection[:,i],(12*14,1))
+        #print(proj2[0,:3])
+        #X_new = X*1e9-np.transpose(proj2)*1e9
+        X_new = X-projection
+        #print((np.var(X_new, axis=1)).shape)
+        #print(np.mean(np.var(X_new, axis=1))/np.mean(np.var(X, axis=1)))
+        pvaf.append(100-100*np.mean(np.var(X_new, axis=1))/np.mean(np.var(X, axis=1)))
+    sorted = np.argsort(pvaf)[::-1]
     print("pvaf: ", pvaf, 'pvaf_sum', np.sum(pvaf))
+    print(np.min(pvaf), np.max(pvaf))
+    return sorted
 
 
 def pvaf_source(S):
