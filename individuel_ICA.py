@@ -56,14 +56,14 @@ for i in range(0, numberSubjects): #looping over all 14 subjects
 #print("Number of components to keep 0.95 of data after PCA1: ", max(numcomponents_PCA1))
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'Rt:', Rt.shape, 'Rt_3d:', Rt_3d.shape)
 
-componentTimeseriesPlotIndividual(Rt_3d, U, numberComponents=4, numberSubjects=1, plotTitle=plotTitle, sorted=range(0,36))
+#componentTimeseriesPlotIndividual(Rt_3d, U, numberComponents=4, numberSubjects=1, plotTitle=plotTitle, sorted=range(0,36))
 
 print("")
 print("# This is the ICA step: #")
 print("")
 
 reduceDimensionsICA = 36 # 36*36
-S, A, W, sorted = ICA(X_PCA1, "fastICA", reduced_dim=reduceDimensionsICA) #X needs shape (n_samples, n_features)
+S, A, W, sorted = ICA(X_PCA1, "fastICA", reduced_dim=reduceDimensionsICA, loop_range=36) #X needs shape (n_samples, n_features)
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
 
 # Backprojecting ICA components into PCA1 space (first to PCA2 space)
@@ -73,7 +73,8 @@ W_inv = np.linalg.pinv(W) # A
 for i in range(numberSubjects):
     Rt_ind = Rt_3d[:,:] # Basisskiftematrix ?
     # from PCA1 space to electrode space
-    compPC1 = np.dot(Rt_ind, W_inv)
+    #compPC1 = np.dot(W_inv.T, Rt_ind)
+    compPC1 = np.dot(W_inv.T, Rt_ind)
 
     # stacking the components into a 3d array
     if i == 0:

@@ -323,7 +323,7 @@ def _g(x):
 def _gprime(x):
     return 1 - np.tanh(x)**2
 
-def ICA(X, typeICA, reduced_dim):
+def ICA(X, typeICA, reduced_dim, loop_range):
     # this function takes a matrix and returns the ICA of the matrix
     if typeICA == "fastICA":
         # fastICA
@@ -336,7 +336,7 @@ def ICA(X, typeICA, reduced_dim):
         W_com = transform_ICA.components_
         assert np.allclose(X, np.dot(S, A.T))
         # pvaf
-        sorted = pvaf(X, A, S, reduced_dim)
+        sorted = pvaf(X, A, S, reduced_dim, loop_range)
         print(sorted)
         # sorted = pvaf_source(S)
         
@@ -365,13 +365,13 @@ def ICA(X, typeICA, reduced_dim):
     return S, A, W, sorted
 
 # Percentage variance accounted for
-def pvaf(X, A, S, reduction_dim):
+def pvaf(X, A, S, reduction_dim, loop_range):
     # Reconstructing data set
     projection = np.dot(S, np.transpose(A)) # S instead of data
     pvaf = []
     print(projection.shape)
-    for i in range(12*14):
-        projection = np.dot(S[:,i].reshape(13677,1),A[:,i].reshape(1,12*14))
+    for i in range(loop_range):
+        projection = np.dot(S[:,i].reshape(13677,1),A[:,i].reshape(1,loop_range))
         #proj2 = np.tile(projection[:,i],(12*14,1))
         #print(proj2[0,:3])
         #X_new = X*1e9-np.transpose(proj2)*1e9

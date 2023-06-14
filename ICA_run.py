@@ -55,6 +55,8 @@ for i in range(0, numberSubjects): #looping over all 14 subjects
        numcomponents_PCA1.append(np.where(rho_cumsum > 0.95)[0][0])
        #print("Number of components for round ", i,':', numcomponents[i])
 
+#print('Explained variances: ', rho_diag)
+#print('Cumulative explained variance: ', rho_cumsum)
 print("Number of components to keep 0.95 of data after PCA1: ", max(numcomponents_PCA1))
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'Rt:', Rt.shape, 'Rt_3d:', Rt_3d.shape)
 
@@ -124,7 +126,7 @@ print("")
 
 # should the reduceDimensionsICA be used? is not used in the function
 reduceDimensionsICA = 46
-S, A, W, sorted = ICA(X_PCA2_whithen, "fastICA", reduced_dim=reduceDimensionsICA) #X needs shape (n_samples, n_features)
+S, A, W, sorted = ICA(X_PCA2_whithen, "fastICA", reduced_dim=reduceDimensionsICA, loop_range=12*14) #X needs shape (n_samples, n_features)
 
 print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape)
 
@@ -174,7 +176,7 @@ print('ICA_comp_3d: ', ICA_comp_3d.shape)
 
 # Plotting the components
 #sorted = list(range(14*12-1,-1,-1))
-componentTimeseriesPlot(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
+#componentTimeseriesPlot(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
 #componentTimeseriesPlotIndividual(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
 
 #componentPlot(ICA_comp_3d, 7, 3, plotTitle, sorted)
