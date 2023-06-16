@@ -204,7 +204,7 @@ def componentTimeseriesPlotIndividual(R, S, numberComponents, numberSubjects, pl
         for j in range(numberSubjects+1):
             if j == numberSubjects:
                 U3 = S[:, sorted[i]]
-                U3 = U3.reshape(97, 141)
+                U3 = U3.reshape(97*4, 141)
                 U3 = np.mean(U3, axis=0)
 
                 ax[i,j].invert_yaxis()
@@ -366,6 +366,26 @@ def pvaf(X, A, S, reduction_dim, loop_range):
     print(projection.shape)
     for i in range(loop_range):
         projection = np.dot(S[:,i].reshape(13677,1),A[:,i].reshape(1,loop_range))
+        #proj2 = np.tile(projection[:,i],(12*14,1))
+        #print(proj2[0,:3])
+        #X_new = X*1e9-np.transpose(proj2)*1e9
+        X_new = X-projection
+        #print((np.var(X_new, axis=1)).shape)
+        #print(np.mean(np.var(X_new, axis=1))/np.mean(np.var(X, axis=1)))
+        pvaf.append(100-100*np.mean(np.var(X_new, axis=1))/np.mean(np.var(X, axis=1)))
+    sorted = np.argsort(pvaf)[::-1]
+    print("pvaf: ", pvaf, 'pvaf_sum', np.sum(pvaf))
+    print(np.min(pvaf), np.max(pvaf))
+    return sorted
+
+
+def pvaf_new_ICA(X, A, S, reduction_dim, loop_range):
+    # Reconstructing data set
+    projection = np.dot(S, np.transpose(A)) # S instead of data
+    pvaf = []
+    print(projection.shape)
+    for i in range(loop_range):
+        projection = np.dot(S[:,i].reshape(54708,1),A[:,i].reshape(1,loop_range))
         #proj2 = np.tile(projection[:,i],(12*14,1))
         #print(proj2[0,:3])
         #X_new = X*1e9-np.transpose(proj2)*1e9
