@@ -120,15 +120,6 @@ def SVD(X):
     V = Vt.T  # transpose Vt to obtain V
     S = np.diag(S)
 
-    '''
-    # checking if error is small enough to ignore
-    if np.mean(abs(U @ S @ Vt - X)) < 0.0000000000000002:
-        print('SVD works correctly')
-        print ("error = ",np.mean(abs(U @ S @ Vt - X)))
-    else:
-        print('SVD does not work, error seems large')
-        print ("error = ",np.mean(abs(U @ S @ Vt - X)))
-    '''
     
     return U, S, V
 
@@ -143,7 +134,7 @@ def PCA(X,reduced_dim, plot = True):
 
     # PCA by computing SVD of Y
     U, S, V = SVD(X_tilde)
-
+    assert np.allclose(X_tilde, U @ S @ V.T)
 
     #explained variances
     rho = (S * S) / (S * S).sum()
@@ -249,7 +240,7 @@ def componentTimeseriesPlotIndividual(R, S, numberComponents, numberSubjects, pl
 def componentTimeseriesPlot(R, S, numberComponents, numberSubjects, plotTitle, sorted):
     biosemi_montage = mne.channels.make_standard_montage('standard_1020')
     to_drop_ch = list(set(montage.ch_names) - set(common))
-    fig, ax = plt.subplots(numberComponents, numberSubjects+1, figsize=(20, 7))
+    fig, ax = plt.subplots(numberComponents, numberSubjects+2, figsize=(20, 7))
     axs = ax.ravel()
     pbar = tqdm(total=numberComponents * numberSubjects)  # Initialize the progress bar
     count = 0
@@ -262,15 +253,18 @@ def componentTimeseriesPlot(R, S, numberComponents, numberSubjects, plotTitle, s
     maxvalue = np.max([abs(minR), abs(maxR)])
     #cnorm = TwoSlopeNorm(vmin=-maxvalue, vcenter=0, vmax=maxvalue)
     for i in range(numberComponents):
-        for j in range(numberSubjects+1):
+        for j in range(numberSubjects+2):
             if j == numberSubjects:
                 U3 = S[:, sorted[i]]
                 U3 = U3.reshape(97, 141)
                 U3 = np.mean(U3, axis=0)
 
-                ax[i,j].invert_yaxis()
-                ax[i,j].plot(np.arange(-0.1, 1, step=1 / 128), U3)
+                ax[i,j+1].invert_yaxis()
+                ax[i,j+1].plot(np.arange(-0.1, 1, step=1 / 128), U3)
                 count += 1
+            elif j == (numberSubjects+1):
+                ax[i,j-1].set_visible(False)
+                count +=1
             else:
                 data = R[sorted[i], :, j].tolist()
                 df = pd.DataFrame([data], columns=common)
@@ -327,7 +321,7 @@ def ICA(X, typeICA, reduced_dim, loop_range):
     # this function takes a matrix and returns the ICA of the matrix
     if typeICA == "fastICA":
         # fastICA
-        transform_ICA = sklearn.decomposition.FastICA(n_components = None,  whiten=False, fun='logcosh', max_iter=200, tol=0.0001, random_state=2) #added random state to make it reproducible
+        transform_ICA = sklearn.decomposition.FastICA(n_components = None,  whiten= False, fun='logcosh', max_iter=200, tol=0.0001, random_state=2) #added random state to make it reproducible
 
         # fit the model
         S = transform_ICA.fit_transform(X)

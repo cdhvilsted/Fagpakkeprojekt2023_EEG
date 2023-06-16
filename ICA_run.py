@@ -34,7 +34,7 @@ numcomponents_PCA1 = [] #create empty array to store number of components for ea
 
 print("doing PCA on each subject")
 for i in range(0, numberSubjects): #looping over all 14 subjects
-   U, S, V, reduced_X, rho = PCA(data_AVc[i].T, reduceDimensionsPCA1, plot=False)
+   U, S, V, reduced_X, rho = PCA(data_A[i].T, reduceDimensionsPCA1, plot=False)
    #calculate cumulative sum of explained variance to find number of components needed to explain 95% of variance
    rho_diag = np.diagonal(rho)
    rho_cumsum = np.cumsum(rho_diag) 
@@ -61,6 +61,8 @@ print("Number of components to keep 0.95 of data after PCA1: ", max(numcomponent
 print("U: ", U.shape, "     S: ", S.shape, "     V: ", V.shape, "\nreduced_X: ", reduced_X.shape, "     rho: ", rho.shape, 'Rt:', Rt.shape, 'Rt_3d:', Rt_3d.shape)
 
 print("Xt_PCA1 shape: ", (X_PCA1.T).shape) # shape = (componentsPCA1*subjects, epochs*timesteps)
+
+
 
 # Plotting the components and timeseries
 #componentPlot(Rt_3d, 4, numberSubjects, plotTitle,list(range(0,4)))
@@ -93,26 +95,31 @@ print("X_PCA2_whithen shape: ", X_PCA2_whithen.shape)
 # Backprojecting PCA2 components into PCA1 space
 Gt = np.transpose(G)
 
+
+assert np.allclose(reduced_X, np.transpose(Gt @ np.transpose(X_PCA1)))
+
+
 for i in range(numberSubjects):
     Gt_ind = Gt[:,reduceDimensionsPCA1*i:reduceDimensionsPCA1*(i+1)] # selecting the Gt for each subject
     #if i == 0:
     #    print('G: ', Gt1.shape)
     Rt_ind = Rt_3d[:,:,i] # using Rt from PCA1 (the transposed is the inverse as it is orthogonal)
-    PCA2_comp = np.dot(Gt_ind, Rt_ind) # backprojecting PCA2 components into PCA1 space
-
+    #PCA2_comp = np.dot(Gt_ind, Rt_ind) # backprojecting PCA2 components into PCA1 space
+    PCA2_comp =  np.dot(np.transpose(Rt_ind),np.transpose(Gt_ind)) # backprojecting PCA2 components into PCA1 space
+    print(PCA2_comp.shape)
     # stacking the components into a 3d array
     if i == 0:
-        PCA2_comp_3d = PCA2_comp
+        PCA2_comp_3d = np.transpose(PCA2_comp)
 
     else:
-       PCA2_comp_3d = np.dstack((PCA2_comp_3d, PCA2_comp))
+       PCA2_comp_3d = np.dstack((PCA2_comp_3d, np.transpose(PCA2_comp)))
 
 print('PCA2_comp_3d: ', PCA2_comp_3d.shape)
 
 # Plotting the components
 #componentPlot(PCA2_comp_3d, 4, numberSubjects, plotTitle)
 sorted = list(range(168))
-#componentTimeseriesPlot(PCA2_comp_3d, U, 7, numberSubjects, plotTitle, sorted)
+componentTimeseriesPlot(PCA2_comp_3d, U, 7, numberSubjects, plotTitle, sorted)
 
 
 print("")
@@ -133,7 +140,9 @@ print("S shape: ", S.shape, "     A shape: ", A.shape, "     W shape: ", W.shape
 # Backprojecting ICA components into PCA1 space (first to PCA2 space)
 #W_inv = np.linalg.pinv(W[sorted]) # A
 W_inv = np.linalg.pinv(W) # A
+assert np.allclose(W_inv, A)
 
+assert np.allclose(G @ A @ np.transpose(S),X_PCA1.T)
 # Backprojecting ICA components into PCA1 space (first to PCA2 space)
 
 """
@@ -156,27 +165,33 @@ for i in range(numberSubjects):
 """
 #group ICA
 
+
 for i in range(numberSubjects):
     Gt_ind = Gt[:reduceDimensionsPCA2,reduceDimensionsPCA1*i:reduceDimensionsPCA1*(i+1)]
     Rt_ind = Rt_3d[:,:,i] # Basisskiftematrix ?
-    
+    """
     # backprojecting ICA components into PCA2 space
     compPC2 = np.dot(np.transpose(W_inv), Gt_ind)
     # from PCA2 space to PCA1 space
     compPC1 = np.dot(compPC2, Rt_ind)
-
+    """
+    
+    #compPC2 = np.dot(np.transpose(Rt_ind),np.transpose(Gt_ind))
+    #compPC1 = np.dot(compPC2, W_inv)
+    compPC1 = np.transpose(Rt_ind) @ np.transpose(Gt_ind) @ W_inv
+    
     # stacking the components into a 3d array
     if i == 0:
-        ICA_comp_3d = compPC1
+        ICA_comp_3d = np.transpose(compPC1)
     else:
-       ICA_comp_3d = np.dstack((ICA_comp_3d, compPC1))
+       ICA_comp_3d = np.dstack((ICA_comp_3d, np.transpose(compPC1)))
 
 print('ICA_comp_3d: ', ICA_comp_3d.shape)
 
 
 # Plotting the components
 #sorted = list(range(14*12-1,-1,-1))
-#componentTimeseriesPlot(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
+componentTimeseriesPlot(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
 #componentTimeseriesPlotIndividual(ICA_comp_3d, S, 7, numberSubjects, plotTitle, sorted)
 
 #componentPlot(ICA_comp_3d, 7, 3, plotTitle, sorted)
