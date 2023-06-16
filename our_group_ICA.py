@@ -256,7 +256,7 @@ def componentTimeseriesPlot(R, S, numberComponents, numberSubjects, plotTitle, s
         for j in range(numberSubjects+2):
             if j == numberSubjects:
                 U3 = S[:, sorted[i]]
-                U3 = U3.reshape(97, 141)
+                U3 = U3.reshape(97*4, 141)
                 U3 = np.mean(U3, axis=0)
 
                 ax[i,j+1].invert_yaxis()
@@ -266,7 +266,8 @@ def componentTimeseriesPlot(R, S, numberComponents, numberSubjects, plotTitle, s
                 ax[i,j-1].set_visible(False)
                 count +=1
             else:
-                data = R[sorted[i], :, j].tolist()
+                data = R[j, sorted[i], :].tolist()
+                #data = R[sorted[i], :, j].tolist()
                 df = pd.DataFrame([data], columns=common)
                 df[to_drop_ch] = 0
                 #df = df*1e-6
@@ -302,7 +303,7 @@ def timeSeriesPlot(U_3d, component, subject, plotTitle):
 
 def timeSeriesPlotICA(U_3d, component, plotTitle):
     U3 = U_3d[:, component]
-    U3 = U3.reshape(97, 141)
+    U3 = U3.reshape(97*4, 141)
     U3 = np.mean(U3, axis=0)
     plt.gca().invert_yaxis()
     plt.plot(np.arange(-0.1, 1, step=1 / 128), U3)
@@ -383,7 +384,7 @@ def pvaf_new_ICA(X, A, S, reduction_dim, loop_range):
     # Reconstructing data set
     projection = np.dot(S, np.transpose(A)) # S instead of data
     pvaf = []
-    print(projection.shape)
+    #print(projection.shape)
     for i in range(loop_range):
         projection = np.dot(S[:,i].reshape(54708,1),A[:,i].reshape(1,loop_range))
         #proj2 = np.tile(projection[:,i],(12*14,1))
