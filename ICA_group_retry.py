@@ -76,6 +76,17 @@ print(np.shape(whitening_matrix), "whitening matrix")
 print(np.shape(mu_ica), "mu_ica")
 print(np.shape(mu_pca), "mu_pca")
 
+
+whiten_backproj = np.zeros((n_components*num_subjects, num_sources, num_subjects))
+
+# backprojection of whitenend components
+for i in range(num_subjects):
+    G_i = whitening_matrix.T[i*n_components:(i+1)*n_components, :]
+    R_i = R_pca[i]
+    whiten_backproj[:,:,i] = np.transpose(np.dot(R_i, G_i))
+
+componentPlot(whiten_backproj, numberComponents=7, numberSubjects=num_subjects, plotTitle='whitening matrix',sorted = list(range(7)))
+
 # Backprojection
 backproj = np.zeros((num_subjects, n_components*num_subjects, num_sources))
 
