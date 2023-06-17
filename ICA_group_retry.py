@@ -19,7 +19,7 @@ import random
 data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics = loadData()
 np.random.seed(42)
 
-num_subjects = 14  # Number of subjects # 14
+num_subjects = 14  # Number of subjects 
 num_samples = 54708  # Number of samples per subject # 13677*4
 num_sources = 36  # Number of independent sources per subject # 36
 num_mixtures = num_sources  # Number of observed mixtures per subject
@@ -30,7 +30,7 @@ n_components = 12
 mixtures = np.zeros((num_subjects, num_sources, num_samples))
 
 for i in range(num_subjects):
-    mixtures[i] = np.concatenate((data_A[i,:,:], data_V[i,:,:], data_AVc[i,:,:], data_AVic[i,:,:]), axis=1)
+    mixtures[i] = np.concatenate((data_A[i,:,:], data_V[i,:,:], data_As[i,:,:], data_Vs[i,:,:]), axis=1)
 
 print('Shape of data: ', mixtures.shape)
 
@@ -63,6 +63,7 @@ estimated_sources = ica.fit_transform(X_pca_red)
 whitening_matrix = ica.whitening_
 # get estimated mixing matrices
 estimated_mixing_matrices = ica.mixing_
+mu_ica = ica.mean_
 
 assert np.allclose(X_pca_red, np.dot(estimated_sources, estimated_mixing_matrices.T)+ica.mean_)
 print("Success!")
@@ -72,6 +73,8 @@ print(np.shape(estimated_sources), "estimated sources")
 print(np.shape(estimated_mixing_matrices), "estimated mixing matrices")
 print(np.shape(R_pca), "R_pca")
 print(np.shape(whitening_matrix), "whitening matrix")
+print(np.shape(mu_ica), "mu_ica")
+print(np.shape(mu_pca), "mu_pca")
 
 # Backprojection
 backproj = np.zeros((num_subjects, n_components*num_subjects, num_sources))
@@ -81,7 +84,9 @@ for i in range(num_subjects):
     G_i = whitening_matrix.T[i*n_components:(i+1)*n_components, :]
     R_i = R_pca[i]
     A = estimated_mixing_matrices
+    mu_pca_i = mu_pca[i]
 
+    #backproj[i] = np.transpose(np.dot((np.dot(R_i, G_i).T + mu_pca_i).T, A) + mu_ica)
     backproj[i] = np.transpose(np.dot(np.dot(R_i, G_i), A))
 
 print('Shape of backproj: ', backproj.shape)
@@ -89,18 +94,14 @@ print('Shape of backproj: ', backproj.shape)
 #s = np.arange(0, num_subjects*num_sources)
 sorted = pvaf_new_ICA(S = estimated_sources, X = X_pca_red, A = estimated_mixing_matrices, reduction_dim = n_components, loop_range = n_components*num_subjects)
 
-#componentTimeseriesPlot(backproj, estimated_sources, numberComponents=7, numberSubjects=14, plotTitle='group ICA', sorted=sorted)
-#timeSeriesPlotICA(estimated_sources, sorted[1], plotTitle='Component 3')
+componentTimeseriesPlot(backproj, estimated_sources, numberComponents=7, numberSubjects=num_subjects, plotTitle='group ICA', sorted=sorted)
+#timeSeriesPlotICA(estimated_sources, sorted[3], plotTitle='Component 3')
 
+'''
 fig, ax = plt.subplots(1, n_components, figsize=(15, 5))
 for i in range(n_components):
-    U3 = estimated_sources[:, i]
-    U3 = U3.reshape(97*4, 141)
-    U3 = np.mean(U3, axis=0)
-    #plt.gca().invert_yaxis()
-    #plt.plot(np.arange(-0.1, 1, step=1 / 128), U3)
-    ax[0,i].set_title('Component ' + str(i))
+    timeSeriesPlotICA(estimated_sources, sorted[i], plotTitle='Component ', str(i))
 
 plt.show()
-
+'''
 

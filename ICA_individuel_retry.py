@@ -27,7 +27,7 @@ subject_index = 0
 
 ###############################################################################
 
-mixtures = np.concatenate((data_A[subject_index,:,:], data_V[subject_index,:,:], data_AVc[subject_index,:,:], data_AVic[subject_index,:,:]), axis=1)
+mixtures = np.concatenate((data_A[subject_index,:,:], data_V[subject_index,:,:], data_As[subject_index,:,:], data_Vs[subject_index,:,:]), axis=1)
 
 print('Shape of data: ', mixtures.shape)
 
