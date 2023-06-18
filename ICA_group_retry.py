@@ -19,7 +19,7 @@ import random
 data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics = loadData()
 np.random.seed(42)
 
-num_subjects = 14  # Number of subjects 
+num_subjects = 2  # Number of subjects 
 num_samples = 54708  # Number of samples per subject # 13677*4
 num_sources = 36  # Number of independent sources per subject # 36
 num_mixtures = num_sources  # Number of observed mixtures per subject
@@ -85,30 +85,47 @@ for i in range(num_subjects):
     R_i = R_pca[i]
     whiten_backproj[:,:,i] = np.transpose(np.dot(R_i, G_i))
 
-componentPlot(whiten_backproj, numberComponents=4, numberSubjects=num_subjects, plotTitle='Group PCA components',sorted = list(range(7)))
+#componentPlot(whiten_backproj, numberComponents=4, numberSubjects=num_subjects, plotTitle='Group PCA components',sorted = list(range(7)))
 
 # Backprojection
 backproj = np.zeros((num_subjects, n_components*num_subjects, num_sources))
 backproj2 = np.zeros((num_subjects, n_components*num_subjects, num_sources))
 
+times = np.arange(-0.1,1,step=1/128)
+N_comp = (np.where(times <= 0.10))[-1][-1] # 50 ms
+sorted = pvaf_new_ICA(S = estimated_sources, X = X_pca_red, A = estimated_mixing_matrices, reduction_dim = n_components, loop_range = n_components*num_subjects)
 # plot the components
 for i in range(num_subjects):
-    G_i = whitening_matrix.T[i*n_components:(i+1)*n_components, :]
-    R_i = R_pca[i]
-    A = estimated_mixing_matrices
-    mu_pca_i = mu_pca[i]
+    for j in range(n_components*num_subjects):
+        G_i = whitening_matrix.T[i*n_components:(i+1)*n_components, :]
+        R_i = R_pca[i]
+        A = estimated_mixing_matrices
+        comp_chosen = sorted[j]
 
-    #backproj[i] = np.transpose(np.dot((np.dot(R_i, G_i).T + mu_pca_i).T, A) + mu_ica)
-    backproj[i] = np.transpose(np.dot(np.dot(R_i, G_i), A))
-    backproj2[i] = np.transpose(np.dot(R_i, A))
+        A_1 = A[:, sorted[comp_chosen]].reshape(n_components*num_subjects,1)
+        S_1 = estimated_sources[:, sorted[comp_chosen]].reshape(1, num_samples)
+        
+        mu_pca_i = mu_pca[i]
+        
+        #backproj[i] = np.transpose(np.dot((np.dot(R_i, G_i).T + mu_pca_i).T, A) + mu_ica)
+        backproj[i] = np.transpose(np.dot(np.dot(R_i, G_i), A))
+        backproj3 = R_i @ G_i @ A_1 @ S_1
+        print(backproj3.shape, 'backproj3 første runde')
+        backproj4 = np.zeros((36,141))
+        for n in range(36):
+            backproj4[n] = np.mean(backproj3[n,:].reshape(4*97,141),axis=0)
+            print(backproj4.shape, 'backproj3 andre runde')
+        backproj2[i,comp_chosen,:] = np.transpose(backproj4[:,N_comp])
+
+
+
+
 
 print('Shape of backproj: ', backproj.shape)
 
 #s = np.arange(0, num_subjects*num_sources)
-sorted = pvaf_new_ICA(S = estimated_sources, X = X_pca_red, A = estimated_mixing_matrices, reduction_dim = n_components, loop_range = n_components*num_subjects)
-
-componentTimeseriesPlot(backproj, estimated_sources, numberComponents=7, numberSubjects=num_subjects, plotTitle='group ICA', sorted=sorted)
 componentTimeseriesPlot(backproj2, estimated_sources, numberComponents=7, numberSubjects=num_subjects, plotTitle='group ICA', sorted=sorted)
+componentTimeseriesPlot(backproj, estimated_sources, numberComponents=7, numberSubjects=num_subjects, plotTitle='group ICA', sorted=sorted)
 
 #timeSeriesPlotICA(estimated_sources, sorted[3], plotTitle='Component 3')
 

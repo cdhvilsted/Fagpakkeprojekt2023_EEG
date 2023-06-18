@@ -53,7 +53,7 @@ pdata_AVc = np.mean(pdata_AVc,axis=0) - pdata_V
 
 np.random.seed(42)
 
-num_subjects = 14  # Number of subjects 
+num_subjects = 2  # Number of subjects 
 num_samples = 54708  # Number of samples per subject # 13677*4
 num_sources = 36  # Number of independent sources per subject # 36
 num_mixtures = num_sources  # Number of observed mixtures per subject
@@ -71,14 +71,18 @@ print('Shape of data: ', data.shape)
 R = R_pca
 G = whitening_matrix
 A = estimated_mixing_matrices
+W = np.linalg.inv(A)
 
 print('Shape of R: ', R.shape)
 print('Shape of G: ', G.shape)
 print('Shape of A: ', A.shape)
 
-ICA_comp = A[:, sorted[4]].reshape(168,1)
+comp_chosen = 2
 
-print('Shape of ICA_comp: ', ICA_comp.shape)
+ICA_comp = A[:, sorted[comp_chosen]].reshape(n_components*num_subjects,1)
+ICA_comp2 = W[sorted[comp_chosen], :].reshape(n_components*num_subjects,1) 
+
+print('Shape of ICA_comp: ', ICA_comp2.shape)
 
 back_data = np.zeros((num_subjects, num_samples, num_subjects*n_components))
 
@@ -117,7 +121,7 @@ pdata_Vs = np.mean(S_Vs[0,:,:].reshape(97,141),axis=0)
 pdata_A = np.mean(S_A[0,:,:].reshape(97,141),axis=0)
 pdata_V = np.mean(S_V[0,:,:].reshape(97,141),axis=0)
 
-for i in range(1,14):
+for i in range(1,num_subjects):
     pdata_As = np.vstack((pdata_As,np.mean(S_As[i,:,:].reshape(97,141),axis=0)))
     pdata_Vs = np.vstack((pdata_Vs,np.mean(S_Vs[i,:,:].reshape(97,141),axis=0)))
     pdata_A = np.vstack((pdata_A,np.mean(S_A[i,:,:].reshape(97,141),axis=0)))
@@ -140,14 +144,14 @@ fig, (ax1,ax2) = plt.subplots(1,2)
 ax1.plot(x,p_As,color='k', label='A')
 ax1.plot(x,p_Vs,color='k',linestyle='dashed', label='V')
 #ax1.plot(x,pdata_AVcs,color='0.8', label = 'Congruent AV-V')
-ax1.set_yticks(np.arange(-6e-6,8e-6,2e-6))
+#ax1.set_yticks(np.arange(-6e-6,8e-6,2e-6))
 ax1.invert_yaxis()
 ax1.set_title('Speech')
 #ax2.axvline(x=0.1,color='r')
 ax2.plot(x,p_A,color='k', label='A')
 ax2.plot(x,p_V,color='k',linestyle='dashed', label='V')
 #ax2.plot(x,pdata_AVc,color='0.8', label = 'Congruent AV-V')
-ax2.set_yticks(np.arange(-6e-6,8e-6,2e-6))
+#ax2.set_yticks(np.arange(-6e-6,8e-6,2e-6))
 ax2.invert_yaxis()
 ax2.set_title('Non-speech')
 ax1.legend(loc='upper right', fontsize = 8)
