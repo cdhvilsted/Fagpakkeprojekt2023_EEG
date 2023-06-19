@@ -20,6 +20,7 @@ before running run the ICA_dataimport.py to get the correct datafiles
 | ICA_group_run.py   | Use this for running the individulal ICA on EEG data, and get results and plots   |
 | our_group_ICA.py   | here we made some functions which we use a lot for ICA, and plotting   |
 | t_testing_ICA.py | Results for the t-test on the synthetic channel found by ICA |
-| sim_individual_ICA.py | Constructing simulated data and making individual ICAS |
+| sim_individual_ICA.py | Constructing simulated data and making individual ICA |
+| sim_group_ICA.py | Constructing simulated data and making group ICA |
 
 
