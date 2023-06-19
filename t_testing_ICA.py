@@ -13,6 +13,7 @@ import scipy
 
 ###############################################################################
 
+'''
 # Import data from files made in ICA_dataImport.py
 data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics = loadData()
 data_liste = [data_A, data_V, data_AVc, data_AVic, data_As, data_Vs, data_AVcs, data_AVics]
@@ -168,9 +169,17 @@ for k in range(len(data_titles)):
 
 print('done')
 
+'''
+
 #t-testing begins
 
+from ERP_plot_grand_averages import S_A, S_V, S_AVc, S_AVic, S_As, S_Vs, S_AVcs, S_AVics
 
+print('Shape of S_As: ', S_As.shape)
+
+ICA_data_timeseries = np.concatenate((S_A, S_V, S_AVc, S_AVic, S_As, S_Vs, S_AVcs, S_AVics), axis=2)
+
+print('Shape of ICA_data_timeseries: ', ICA_data_timeseries.shape)
 
 times = np.arange(-0.1,1,step=1/128)
 N_comp_min = (np.where(times <= 0.05))[-1][-1] # 50 ms
@@ -204,68 +213,16 @@ P2_icns = []
 P2_cns = []
 P2_Vns = []
 
-pdata_A = np.mean(ICA_data_timeseries[:,0,0].reshape(97,141), axis = 0) # 97 epochs, 141 timesteps
-pdata_V = np.mean(ICA_data_timeseries[:,0,1].reshape(97,141), axis = 0)
-pdata_AVc = np.mean(ICA_data_timeseries[:,0,2].reshape(97,141), axis = 0)
-pdata_AVic = np.mean(ICA_data_timeseries[:,0,3].reshape(97,141), axis = 0)
-pdata_As = np.mean(ICA_data_timeseries[:,0,4].reshape(97,141), axis = 0)
-pdata_Vs = np.mean(ICA_data_timeseries[:,0,5].reshape(97,141), axis = 0)
-pdata_AVcs = np.mean(ICA_data_timeseries[:,0,6].reshape(97,141), axis = 0)
-pdata_AVics = np.mean(ICA_data_timeseries[:,0,7].reshape(97,141), axis = 0)
-
-for i in range(1,14):
-    pdata_A = np.vstack((pdata_A,np.mean(ICA_data_timeseries[:,i,0].reshape(97,141), axis = 0))) # 97 epochs, 141 timesteps
-    pdata_V = np.vstack((pdata_V,np.mean(ICA_data_timeseries[:,i,1].reshape(97,141), axis = 0)))
-    pdata_AVc = np.vstack((pdata_AVc,np.mean(ICA_data_timeseries[:,i,2].reshape(97,141), axis = 0)))
-    pdata_AVic =  np.vstack((pdata_AVic,np.mean(ICA_data_timeseries[:,i,3].reshape(97,141), axis = 0)))
-    pdata_As = np.vstack((pdata_As,np.mean(ICA_data_timeseries[:,i,4].reshape(97,141), axis = 0)))
-    pdata_Vs = np.vstack((pdata_Vs,np.mean(ICA_data_timeseries[:,i,5].reshape(97,141), axis = 0)))
-    pdata_AVcs = np.vstack((pdata_AVcs,np.mean(ICA_data_timeseries[:,i,6].reshape(97,141), axis = 0)))
-    pdata_AVics = np.vstack((pdata_AVics,np.mean(ICA_data_timeseries[:,i,7].reshape(97,141), axis = 0)))
-
-pdata_As = np.mean(pdata_As,axis=0)
-pdata_Vs = np.mean(pdata_Vs,axis=0)
-pdata_AVcs = np.mean(pdata_AVcs,axis=0) - pdata_Vs
-pdata_AVics = np.mean(pdata_AVics,axis=0) - pdata_Vs
-
-pdata_A = np.mean(pdata_A,axis=0)
-pdata_V = np.mean(pdata_V,axis=0)
-pdata_AVic = np.mean(pdata_AVic,axis=0) - pdata_V
-pdata_AVc = np.mean(pdata_AVc,axis=0) - pdata_V
-
-
-x = np.arange(-0.1,1,step=1/128)
-fig, (ax1,ax2) = plt.subplots(1,2)
-#ax1.axvline(x=0.1,color='r')
-ax1.plot(x,pdata_As,color='k', label='A')
-ax1.plot(x,pdata_AVics,color='k',linestyle='dashed', label='Incongruent AV-V')
-ax1.plot(x,pdata_AVcs,color='0.8', label = 'Congruent AV-V')
-ax1.set_yticks(np.arange(-6e-6,8e-6,2e-6))
-ax1.invert_yaxis()
-ax1.set_title('Speech')
-#ax2.axvline(x=0.1,color='r')
-ax2.plot(x,pdata_A,color='k', label='A')
-ax2.plot(x,pdata_AVic,color='k',linestyle='dashed', label='Incongruent AV-V')
-ax2.plot(x,pdata_AVc,color='0.8', label = 'Congruent AV-V')
-ax2.set_yticks(np.arange(-6e-6,8e-6,2e-6))
-ax2.invert_yaxis()
-ax2.set_title('Non-speech')
-ax1.legend(loc='upper right', fontsize = 8)
-ax2.legend(loc='upper right', fontsize = 8)
-plt.show()
-
-
-
 for i in range(14):
     # taking average over epochs
-    t_data_A = np.mean(ICA_data_timeseries[:,i,0].reshape(97,141), axis = 0) # 97 epochs, 141 timesteps
-    t_data_V = np.mean(ICA_data_timeseries[:,i,1].reshape(97,141), axis = 0)
-    t_data_AVc = np.mean(ICA_data_timeseries[:,i,2].reshape(97,141), axis = 0)
-    t_data_AVic = np.mean(ICA_data_timeseries[:,i,3].reshape(97,141), axis = 0)
-    t_data_As = np.mean(ICA_data_timeseries[:,i,4].reshape(97,141), axis = 0)
-    t_data_Vs = np.mean(ICA_data_timeseries[:,i,5].reshape(97,141), axis = 0)
-    t_data_AVcs = np.mean(ICA_data_timeseries[:,i,6].reshape(97,141), axis = 0)
-    t_data_AVics = np.mean(ICA_data_timeseries[:,i,7].reshape(97,141), axis = 0)
+    t_data_A = np.mean(ICA_data_timeseries[i,:,0].reshape(97,141), axis = 0) # 97 epochs, 141 timesteps
+    t_data_V = np.mean(ICA_data_timeseries[i,:,1].reshape(97,141), axis = 0)
+    t_data_AVc = np.mean(ICA_data_timeseries[i,:,2].reshape(97,141), axis = 0)
+    t_data_AVic = np.mean(ICA_data_timeseries[i,:,3].reshape(97,141), axis = 0)
+    t_data_As = np.mean(ICA_data_timeseries[i,:,4].reshape(97,141), axis = 0)
+    t_data_Vs = np.mean(ICA_data_timeseries[i,:,5].reshape(97,141), axis = 0)
+    t_data_AVcs = np.mean(ICA_data_timeseries[i,:,6].reshape(97,141), axis = 0)
+    t_data_AVics = np.mean(ICA_data_timeseries[i,:,7].reshape(97,141), axis = 0)
     
     #non-speech 
     N1_Ans.append(np.min(t_data_A[N_comp_min:N_comp_max]))
