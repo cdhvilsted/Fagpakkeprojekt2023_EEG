@@ -23,7 +23,7 @@ num_subjects = 14  # Number of subjects
 num_samples = 54708  # Number of samples per subject # 13677*4
 num_sources = 36  # Number of independent sources per subject # 36
 num_mixtures = num_sources  # Number of observed mixtures per subject
-n_components = 12
+n_components = 14
 
 ###############################################################################
 
@@ -37,21 +37,26 @@ for i in range(num_subjects):
 
 print('Shape of data: ', mixtures.shape)
 
-n_components = 12
 X_pca = np.zeros((num_subjects, num_samples, n_components))
 R_pca = np.zeros((num_subjects, num_sources, n_components))
-S_pca = np.zeros((num_subjects, num_samples, n_components))
+S_pca = np.zeros((num_subjects, num_samples, num_sources))
 mu_pca = np.zeros((num_subjects, num_sources))
+numcomponents_PCA1 = []
 for i in range(num_subjects):
-    pca = PCA(n_components=n_components, whiten=False)
+    pca = PCA(n_components=None, whiten=False)
     S_pca[i] = pca.fit(mixtures[i].T).transform(mixtures[i].T)
     #S_pca[i] = pca.fit_transform(mixtures[i])
-    R_pca[i] = pca.components_[:12,:].T  # Get estimated mixing matrix
-    X_pca[i] = np.dot(mixtures[i].T, R_pca[i,:,:12]) + pca.mean_[:12]  # Estimate the sources
+    R_pca[i] = pca.components_[:n_components,:].T  # Get estimated mixing matrix
+    X_pca[i] = np.dot(mixtures[i].T, R_pca[i,:,:n_components]) + pca.mean_[:n_components]  # Estimate the sources
     mu_pca[i] = pca.mean_  # Get the mean of the mixtures
     #print(mu_pca[i])
     #assert np.allclose(mixtures[i].T, np.dot(S_pc, R_pc.T))
     #print("Success!")
+    explain_variance = pca.explained_variance_ratio_
+    explain_variance = np.cumsum(explain_variance)
+    numcomponents_PCA1.append(np.where(explain_variance > 0.95)[0][0])
+print(numcomponents_PCA1, "components explain 95% of the variance for subjects")
+
 X_pca_red = X_pca
 
 # Concatenate the mixtures
@@ -96,9 +101,6 @@ for i in range(num_subjects):
 backproj = np.zeros((num_subjects, n_components*num_subjects, num_sources))
 backproj2 = np.zeros((num_subjects, n_components*num_subjects, num_sources))
 
-print('hello is :',np.allclose(X_pca_red, np.dot(estimated_sources, estimated_mixing_matrices.T)))
-print('hello2 is :',np.allclose(X_pca_red, np.dot(estimated_sources, estimated_mixing_matrices.T)+mu_ica))
-
 
 times = np.arange(-0.1,1,step=1/128)
 N_comp = (np.where(times <= 0.10))[-1][-1] # 100 ms
@@ -134,9 +136,9 @@ print('Shape of backproj: ', backproj.shape)
 
 #s = np.arange(0, num_subjects*num_sources)
 #componentTimeseriesPlot(backproj2, estimated_sources, numberComponents=7, numberSubjects=num_subjects, plotTitle='group ICA', sorted=sorted)
-componentTimeseriesPlot(backproj, estimated_sources, numberComponents=7, numberSubjects=num_subjects, plotTitle='group ICA', sorted=sorted)
+componentTimeseriesPlot(backproj, estimated_sources, numberComponents=5, numberSubjects=num_subjects, plotTitle='group ICA', sorted=sorted)
 
-#timeSeriesPlotICA(estimated_sources, sorted[3], plotTitle='Component 3')
+timeSeriesPlotICA(estimated_sources, sorted[4], plotTitle='Component 4')
 
 '''
 fig, ax = plt.subplots(1, n_components, figsize=(15, 5))

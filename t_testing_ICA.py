@@ -10,6 +10,9 @@ from tqdm import tqdm
 import time
 import scipy
 
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+
 
 ###############################################################################
 
@@ -244,6 +247,14 @@ for i in range(14):
     P2_cs.append(np.max(t_data_AVcs[P_comp_min:P_comp_max]))
     P2_ics.append(np.max(t_data_AVics[P_comp_min:P_comp_max]))
 
+#into panda dataframe
+df_N1 = pd.DataFrame({'speechT': ['non-speech']*14*4 + ['speech']*14*4, 'stimuli': ['A']*14 + ['V']*14 + ['AVc']*14 + ['AVic']*14 + ['As']*14 + ['Vs']*14 + ['AVcs']*14 + ['AVics']*14, 'N1_values': N1_Ans + N1_Vns + N1_cns + N1_icns + N1_As + N1_Vs + N1_cs + N1_ics})
+df_P2 = pd.DataFrame({'speechT': ['non-speech']*14*4 + ['speech']*14*4, 'stimuli': ['A']*14 + ['V']*14 + ['AVc']*14 + ['AVic']*14 + ['As']*14 + ['Vs']*14 + ['AVcs']*14 + ['AVics']*14, 'P2_values': P2_Ans + P2_Vns + P2_cns + P2_icns + P2_As + P2_Vs + P2_cs + P2_ics})
+
+model_N1 = ols('N1_values~ C(speechT) + C(stimuli) + C(speechT):C(stimuli)', data=df_N1).fit()
+model_P2 = ols('P2_values~ C(speechT) + C(stimuli) + C(speechT):C(stimuli)', data=df_P2).fit()
+print(sm.stats.anova_lm(model_N1, typ=2))
+print(sm.stats.anova_lm(model_P2, typ=2))
 
 
 # N1, speech

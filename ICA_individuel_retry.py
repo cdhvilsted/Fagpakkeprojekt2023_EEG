@@ -29,6 +29,7 @@ subject_index = 0
 
 mixtures = np.concatenate((data_A[subject_index,:,:], data_V[subject_index,:,:], data_As[subject_index,:,:], data_Vs[subject_index,:,:]), axis=1)
 
+mixtures = mixtures - mixtures.mean(axis=1).reshape(36,1)
 print('Shape of data: ', mixtures.shape)
 
 pca = PCA(n_components=36, whiten=False)
@@ -37,7 +38,7 @@ Rt_pca = pca.components_ # A is outputted transposed
 X_pca = np.dot(S_pca, Rt_pca) + pca.mean_
 
 # Reducing dimensionality
-n_components = 12
+n_components = 14
 X_reduced = np.dot(mixtures.T, Rt_pca[:n_components,:].T)
 print('Shape of X_reduced: ', X_reduced.shape)
 
@@ -63,7 +64,7 @@ print(np.shape(Rt_pca), "Rt_pca")
 print(np.shape(whitening_matrix), "whitening matrix")
 
 #estimated_sources1 = np.dot(estimated_sources, estimated_mixing_matrices.T)
-estimated_mixing_matrices1 = np.dot(Rt_pca[:12,:].T, estimated_mixing_matrices)
+estimated_mixing_matrices1 = np.dot(Rt_pca[:n_components,:].T, estimated_mixing_matrices)
 #print(np.shape(estimated_sources1), "estimated sources1")
 print(np.shape(estimated_mixing_matrices1), "estimated mixing matrices1")
 
