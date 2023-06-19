@@ -53,7 +53,7 @@ pdata_AVc = np.mean(pdata_AVc,axis=0) - pdata_V
 
 np.random.seed(42)
 
-num_subjects = 2  # Number of subjects 
+num_subjects = 14  # Number of subjects 
 num_samples = 54708  # Number of samples per subject # 13677*4
 num_sources = 36  # Number of independent sources per subject # 36
 num_mixtures = num_sources  # Number of observed mixtures per subject
@@ -71,7 +71,7 @@ print('Shape of data: ', data.shape)
 R = R_pca
 G = whitening_matrix
 A = estimated_mixing_matrices
-W = np.linalg.inv(A)
+W = np.linalg.inv(A) #tried using the transposed version of A, but it didn't work
 
 print('Shape of R: ', R.shape)
 print('Shape of G: ', G.shape)
@@ -80,7 +80,7 @@ print('Shape of A: ', A.shape)
 comp_chosen = 2
 
 ICA_comp = A[:, sorted[comp_chosen]].reshape(n_components*num_subjects,1)
-ICA_comp2 = W[sorted[comp_chosen], :].reshape(n_components*num_subjects,1) 
+ICA_comp2 = W[:,sorted[comp_chosen]].reshape(n_components*num_subjects,1) 
 
 print('Shape of ICA_comp: ', ICA_comp2.shape)
 
@@ -105,12 +105,21 @@ S_V = np.zeros((num_subjects, 13677, 1))
 S_As = np.zeros((num_subjects, 13677, 1))
 S_Vs = np.zeros((num_subjects, 13677, 1))
 
-for i in range(num_subjects):
-    S_A[i] = d_A[i,:,:].T @ R[i,:,:] @ G.T[i*n_components:(i+1)*n_components, :] @ ICA_comp
-    S_V[i] = d_V[i,:,:].T @ R[i,:,:] @ G.T[i*n_components:(i+1)*n_components, :] @ ICA_comp
-    S_As[i] = d_As[i,:,:].T @ R[i,:,:] @ G.T[i*n_components:(i+1)*n_components, :] @ ICA_comp
-    S_Vs[i] = d_Vs[i,:,:].T @ R[i,:,:] @ G.T[i*n_components:(i+1)*n_components, :] @ ICA_comp
 
+for i in range(num_subjects):
+    S_A[i] = (ICA_comp2.T @ G[:, i*n_components:(i+1)*n_components] @ R[i,:,:].T @ d_A[i,:,:]).T
+    S_V[i] = (ICA_comp2.T @ G[:, i*n_components:(i+1)*n_components] @ R[i,:,:].T @ d_V[i,:,:]).T
+    S_As[i] = (ICA_comp2.T @ G[:, i*n_components:(i+1)*n_components] @ R[i,:,:].T @ d_As[i,:,:]).T
+    S_Vs[i] = (ICA_comp2.T @ G[:, i*n_components:(i+1)*n_components] @ R[i,:,:].T @ d_Vs[i,:,:]).T
+
+
+"""
+for i in range(num_subjects):
+    S_A[i] = d_A[i,:,:].T @ R[i,:,:] @ G.T[i*n_components:(i+1)*n_components, :] @ ICA_comp2
+    S_V[i] = d_V[i,:,:].T @ R[i,:,:] @ G.T[i*n_components:(i+1)*n_components, :] @ ICA_comp2
+    S_As[i] = d_As[i,:,:].T @ R[i,:,:] @ G.T[i*n_components:(i+1)*n_components, :] @ ICA_comp2
+    S_Vs[i] = d_Vs[i,:,:].T @ R[i,:,:] @ G.T[i*n_components:(i+1)*n_components, :] @ ICA_comp2
+"""
 print('Shape of S_A: ', S_A.shape)
 print('Shape of S_V: ', S_V.shape)
 print('Shape of S_As: ', S_As.shape)

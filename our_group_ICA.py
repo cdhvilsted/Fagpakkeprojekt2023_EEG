@@ -206,7 +206,6 @@ def componentTimeseriesPlotIndividual(R, S, numberComponents, numberSubjects, pl
                 U3 = S[:, sorted[i]]
                 U3 = U3.reshape(97*4, 141)
                 U3 = np.mean(U3, axis=0)
-
                 ax[i,j].invert_yaxis()
                 ax[i,j].plot(np.arange(-0.1, 1, step=1 / 128), U3)
                 count += 1
@@ -240,7 +239,8 @@ def componentTimeseriesPlotIndividual(R, S, numberComponents, numberSubjects, pl
 def componentTimeseriesPlot(R, S, numberComponents, numberSubjects, plotTitle, sorted):
     biosemi_montage = mne.channels.make_standard_montage('standard_1020')
     to_drop_ch = list(set(montage.ch_names) - set(common))
-    fig, ax = plt.subplots(numberComponents, numberSubjects+2, figsize=(20, 7))
+    width = [1]*numberSubjects + [0.5] + [2]
+    fig, ax = plt.subplots(numberComponents, numberSubjects+2, figsize=(25, 7), gridspec_kw= {'width_ratios':  width})
     axs = ax.ravel()
     pbar = tqdm(total=numberComponents * numberSubjects)  # Initialize the progress bar
     count = 0
@@ -258,9 +258,10 @@ def componentTimeseriesPlot(R, S, numberComponents, numberSubjects, plotTitle, s
                 U3 = S[:, sorted[i]]
                 U3 = U3.reshape(97*4, 141)
                 U3 = np.mean(U3, axis=0)
-
                 ax[i,j+1].invert_yaxis()
                 ax[i,j+1].plot(np.arange(-0.1, 1, step=1 / 128), U3)
+                ax[i,j].set_xticks([-0.1,0,0.1,0.2,1])
+                ax[i,j].set_xticklabels([-0.1,0,0.1,0.2,1])
                 count += 1
             elif j == (numberSubjects+1):
                 ax[i,j-1].set_visible(False)
