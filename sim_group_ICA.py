@@ -8,8 +8,10 @@ import random
 # Set the random seed to 42
 np.random.seed(30) # this seed works for finding a suitable mixing matrix
 
+
 # make random seed to
 random.seed(30)
+
 
 # Generate simulated signals
 num_subjects = 2  # Number of subjects
@@ -17,10 +19,9 @@ num_samples = 1000  # Number of samples per subject
 num_sources = 3  # Number of independent sources per subject
 num_mixtures = num_sources  # Number of observed mixtures per subject
 
-# Create random mixing matrices A for each subject
-A = [np.random.rand(num_mixtures, num_sources) for _ in range(num_subjects)]
-A = 
 
+# Create random mixing matrices A for each subject
+A = [np.random.rand(num_mixtures, num_sources)*0.3 for _ in range(num_subjects)]
 
 
 time = np.linspace(0, 10, num_samples)
@@ -167,7 +168,7 @@ plt.figure(figsize=(10, 4))
 plt.suptitle("Estimated Sources (ICA)", fontsize=20, weight='bold')
 
 for j in range(num_sources * num_subjects):
-    if j == 5:
+    if j == 2:
         plt.plot(np.arange(num_samples), S_ICA[:, j], label=f"Estimated Source {j + 1} (Common)", linewidth=2.5, color = 'tab:pink')
     else:
         plt.plot(np.arange(num_samples), S_ICA[:, j], label=f"Estimated Source {j + 1}", alpha=0.8)
@@ -181,7 +182,7 @@ plt.show()
 
 
 # Plot the estimated sources in ICA space
-chosen_source = 5
+chosen_source = 2
 plt.figure(figsize=(10, 8))
 plt.subplot(2, 1, 1)
 plt.suptitle("Estimated Source Component 2 (Common)", fontsize=20, weight='bold')
@@ -207,33 +208,3 @@ plt.subplots_adjust(hspace=0.6)
 sns.despine()
 plt.show()
 
-
-# Plot backprojected sources
-
-back = np.dot(S_ICA, estimated_A)  + ica.mean_
-
-back_proj_sub0 = (back[:, :3] @ V_pca[0].T) + mu_pca[0].reshape(1, 3)
-back_proj_sub1 = (back[:, 3:] @ V_pca[1].T) + mu_pca[1].reshape(1, 3)
-
-#back_proj_sub0 = (X_pca[:, :3] @ V_pca[0].T) + mu_pca[0].reshape(1, 3)
-#back_proj_sub1 = (X_pca[:, 3:] @ V_pca[1].T) + mu_pca[1].reshape(1, 3)
-
-back_proj_sources = np.zeros((num_subjects, num_sources, num_samples))
-back_proj_sources[0] = back_proj_sub0.T
-back_proj_sources[1] = back_proj_sub1.T
-
-plt.figure(figsize=(10, 8))
-fig, axs = plt.subplots(num_plots, 1, figsize=(10, 8))
-for i, ax in enumerate(axs):
-    plt.suptitle("From ICA Backprojected to Mixed Data", fontsize=20, weight='bold')
-    ax.set_title("Subject " + str(i + 1), fontweight='bold')
-
-    for j in range(num_mixtures):
-        ax.plot(back_proj_sources[i, j, :], label=f"Subject {i + 1}, Source {j + 1}", alpha=0.8)
-    ax.legend(loc='upper right', fontsize='small')
-    ax.set_xlabel("Sample Index", fontsize=12)
-    ax.set_ylabel("Amplitude", fontsize=12)
-
-plt.subplots_adjust(hspace=0.6)
-sns.despine()
-plt.show()
