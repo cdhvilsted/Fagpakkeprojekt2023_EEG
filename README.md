@@ -4,6 +4,7 @@ This is the code for our project about Analysis of EEG signals.
 
 
 = !IMPORTANT! = 
+
 before running run the ICA_dataimport.py to get the correct datafiles
 
 
